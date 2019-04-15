@@ -5,8 +5,20 @@ import Router from 'vue-router'
 import wxMinManage from './routers/wxMinManage'
 import dataAnalysis from './routers/dataAnalysis'
 
+//添加注册页面
+let Register = [
+	{
+		path: '/Register/index',
+		name: '登录页面',
+		// meta:{
+		// 	code:'A02'
+		// },
+		component: r => require.ensure([], () => r(require('@/views/register')), 'register'),
+	},
+]
+
 //路由合并
-const routes = wxMinManage.concat(dataAnalysis)
+const routes = wxMinManage.concat(dataAnalysis,Register)
 
 Vue.use(Router)
 

@@ -4,7 +4,7 @@
       <el-menu
         class="el-menu-vertical-demo"
         :router="true"
-        default-active="/wxMinManage/boutique"
+        :default-active="defaultActive"
         >
         <el-menu-item index="/wxMinManage/boutique">
           <i class="el-icon-menu"></i>
@@ -28,6 +28,11 @@
 <script>
 export default {
   name:'wxMinManage',
+  computed:{
+    defaultActive(){
+      return this.$route.fullPath
+    }
+  },
 }
 </script>
 <style lang="less" scoped>

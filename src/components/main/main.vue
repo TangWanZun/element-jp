@@ -1,15 +1,5 @@
 <template>
-  <!-- <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
-    <router-view/>
-  </div>-->
-  <div>
-      <router-view/>
-  </div>
-  <!-- <div class="body">
+  <div class="body">
     <div class="header">
       <div class="header-left">
         <div class="logo">
@@ -32,7 +22,7 @@
     <div class="main">
       <router-view/>
     </div>
-  </div> -->
+  </div>
 </template>
 
 <script>
@@ -72,7 +62,7 @@ export default {
      */
     routeName(){
       if(this.$route.name){
-        return this.$route.matched[0].meta.code
+        return this.$route.matched[1].meta.code
       }else{
         return null;
       }
@@ -89,7 +79,7 @@ export default {
 </script>
 
 <style lang="less" scoped>
-@import url("./main.less");
+@import url("../../main.less");
 .body {
   display: flex;
   flex-direction: column;

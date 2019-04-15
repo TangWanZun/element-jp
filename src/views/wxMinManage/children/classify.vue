@@ -36,12 +36,13 @@
               class="card-item"
               :body-style="{padding:'0px'}"
               shadow="never"
+              @click.native="cardAddButton"
             >
               <div class="card-item-in">
                 <img :src="cardItem.img" alt srcset>
                 <div>{{cardItem.name}}</div>
                 <!-- 删除按钮 -->
-                <div class="card-item-del" @click="delItemButton(key,cardIndex)">
+                <div class="card-item-del" @click.stop="delItemButton(key,cardIndex)">
                   <i class="el-icon-delete"></i>
                 </div>
               </div>
@@ -286,6 +287,7 @@ export default {
           margin-bottom: 10px;
           border: 1px solid rgba(0, 0, 0, 0.1);
           position: relative;
+          cursor: pointer;
           &::before {
             content: "";
             position: absolute;

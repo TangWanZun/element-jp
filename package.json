@@ -9,6 +9,7 @@
   "dependencies": {
     "echarts": "^4.2.1",
     "element-ui": "^2.7.2",
+    "sortablejs": "^1.8.4",
     "vue": "^2.6.6",
     "vue-router": "^3.0.1",
     "vuex": "^3.0.1"

@@ -3,15 +3,20 @@
     <div class="body">
       <el-card>
         <div slot="header" class="clearfix">
-          <el-button type="primary" @click="addButton">增加行</el-button>
-          <el-button type="danger" :disabled="delDisabled" @click="delButton">删除行</el-button>
+          <el-input v-model="searchInput" size="small" placeholder="请输入内容" style="width:200px;margin-right:10px"></el-input>
+          <el-button type="primary" size="small" icon="el-icon-search" circle></el-button>
+          <el-button type="primary" size="small" @click="addButton">增加行</el-button>
+          <el-button type="danger" size="small" :disabled="delDisabled" @click="delButton">删除行</el-button>
         </div>
         <el-table
           :row-class-name="rowClassName"
           :data="tableData"
           stripe
           style="width: 100%"
+          v-loading="tableLoading"
+          height="600px"
           @selection-change="selectionChange"
+          @row-dblclick="rowDblclick"
         >
           <el-table-column type="selection" width="55"></el-table-column>
           <el-table-column type="index" width="50"></el-table-column>
@@ -20,7 +25,12 @@
           <el-table-column prop="address" label="地址"></el-table-column>
         </el-table>
         <div class="card-footer">
-          <el-pagination background layout="prev, pager, next" :total="1000"></el-pagination>
+          <el-pagination
+            background
+            layout="prev, pager, next,jumper"
+            :total="1000"
+            @current-change="currentChange"
+          ></el-pagination>
         </div>
       </el-card>
     </div>
@@ -30,61 +40,20 @@
 
 <script>
 import distributorModal from "./distributorModal";
+import { setTimeout } from "timers";
 export default {
   components: {
     distributorModal
   },
   data() {
     return {
-      tableData: [
-        {
-          name: "北京鹏龙经销商",
-          phone: "010-0675331",
-          address: "上海市普陀区金沙江路 1516 弄"
-        },
-        {
-          name: "北京鹏龙经销商",
-          phone: "010-0675331",
-          address: "上海市普陀区金沙江路 1518 弄"
-        },
-        {
-          name: "北京鹏龙经销商",
-          phone: "010-0675331",
-          address: "上海市普陀区金沙江路 1517 弄"
-        },
-        {
-          name: "北京鹏龙经销商",
-          phone: "010-0675331",
-          address: "上海市普陀区金沙江路 1519 弄"
-        },
-        {
-          name: "北京鹏龙经销商",
-          phone: "010-0675331",
-          address: "上海市普陀区金沙江路 1516 弄"
-        },
-        {
-          name: "北京鹏龙经销商",
-          phone: "010-0675331",
-          address: "上海市普陀区金沙江路 1518 弄"
-        },
-        {
-          name: "北京鹏龙经销商",
-          phone: "010-0675331",
-          address: "上海市普陀区金沙江路 1517 弄"
-        },
-        {
-          name: "北京鹏龙经销商",
-          phone: "010-0675331",
-          address: "上海市普陀区金沙江路 1519 弄"
-        },
-        {
-          name: "北京鹏龙经销商",
-          phone: "010-0675331",
-          address: "上海市普陀区金沙江路 1516 弄"
-        }
-      ],
+      tableData: [],
       //选择的行信息
-      selectionLine: []
+      selectionLine: [],
+      //列表loading
+      tableLoading: false,
+      //搜索
+      searchInput:''
     };
   },
   computed: {
@@ -93,7 +62,66 @@ export default {
       return this.selectionLine.length == 0;
     }
   },
+  created(){
+    this.getData()
+  },
   methods: {
+    /**
+     * 获取数据
+     */
+    getData(page=0) {
+      this.tableLoading = true;
+      setTimeout(() => {
+        this.tableData = [
+          {
+            name: "北京鹏龙经销商",
+            phone: "010-0675331",
+            address: "上海市普陀区金沙江路 1516 弄"
+          },
+          {
+            name: "北京鹏龙经销商",
+            phone: "010-0675331",
+            address: "上海市普陀区金沙江路 1518 弄"
+          },
+          {
+            name: "北京鹏龙经销商",
+            phone: "010-0675331",
+            address: "上海市普陀区金沙江路 1517 弄"
+          },
+          {
+            name: "北京鹏龙经销商",
+            phone: "010-0675331",
+            address: "上海市普陀区金沙江路 1519 弄"
+          },
+          {
+            name: "北京鹏龙经销商",
+            phone: "010-0675331",
+            address: "上海市普陀区金沙江路 1516 弄"
+          },
+          {
+            name: "北京鹏龙经销商",
+            phone: "010-0675331",
+            address: "上海市普陀区金沙江路 1518 弄"
+          },
+          {
+            name: "北京鹏龙经销商",
+            phone: "010-0675331",
+            address: "上海市普陀区金沙江路 1517 弄"
+          },
+          {
+            name: "北京鹏龙经销商",
+            phone: "010-0675331",
+            address: "上海市普陀区金沙江路 1519 弄"
+          },
+          {
+            name: "北京鹏龙经销商",
+            phone: "010-0675331",
+            address: "上海市普陀区金沙江路 1516 弄"
+          }
+        ];
+        this.tableLoading = false;
+      }, 500);
+    },
     /**
      * 行回调函数
      */
@@ -119,6 +147,21 @@ export default {
       for (let i = this.selectionLine.length - 1; i >= 0; i--) {
         this.tableData.splice(this.selectionLine[i]._index, 1);
       }
+    },
+    /**
+     * 双击行信息的时候
+     */
+    rowDblclick(row, column, event) {
+      this.$refs.distributorModal.show();
+    },
+    /**
+     * 当分页的页码改变的时候
+     */
+    currentChange(page) {
+      //清空数据
+      this.tableData = [];
+      //获取数据
+      this.getData(page);
     }
   }
 };
