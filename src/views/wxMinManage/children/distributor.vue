@@ -3,10 +3,10 @@
     <div class="body">
       <el-card>
         <div slot="header" class="clearfix">
-          <el-input v-model="searchInput" size="small" placeholder="请输入内容" style="width:200px;margin-right:10px"></el-input>
+          <el-input v-model="searchInput" size="small" placeholder="请输入查询条件" style="width:200px;margin-right:10px"></el-input>
           <el-button type="primary" size="small" icon="el-icon-search" circle></el-button>
-          <el-button type="primary" size="small" @click="addButton">增加行</el-button>
-          <el-button type="danger" size="small" :disabled="delDisabled" @click="delButton">删除行</el-button>
+          <el-button type="primary" size="small" @click="addButton">新增</el-button>
+          <el-button type="danger" size="small" :disabled="delDisabled" @click="delButton">删除</el-button>
         </div>
         <el-table
           :row-class-name="rowClassName"

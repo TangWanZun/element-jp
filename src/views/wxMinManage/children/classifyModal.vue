@@ -7,6 +7,8 @@
       width="600px"
       custom-class="classifyModal-dialog-class"
       :show-close="false"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
     >
       <div class="dialog-body">
         <el-tabs v-model="tabsValue">

@@ -26,7 +26,7 @@
 
 <script>
 export default {
-  name: "Register",
+  name: "Loading",
   data(){
     return{
       bg:require('@/assets/fz/registerBg.svg'),

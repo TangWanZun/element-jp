@@ -7,6 +7,8 @@
       :visible.sync="meValue"
       :show-close="false"
       width="700px"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
     >
       <div class="dialog-body">
         <el-tabs v-model="tabs">
@@ -35,13 +37,27 @@
           <el-tab-pane label="地理位置" name="tabs-2">
             <el-form label-position="left" ref="form" :model="form" label-width="80px" size="mini">
               <el-form-item label="检索地址">
-                <el-select v-model="form.address" placeholder="请选择" style="width:100%">
+                <!-- <el-input v-model="form.address" @change="addressChange"></el-input> -->
+                <el-select
+                  v-model="form.address"
+                  placeholder="请填写经销商位置"
+                  style="width:100%"
+                  :filterable="true"
+                  :remote="true"
+                  :loading="selectLoading"
+                  :remote-method="addressRemote"
+                  :clearable="true"
+                  @change="addressChange"
+                >
                   <el-option
                     v-for="item in selectList"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value"
-                  ></el-option>
+                    :key="item.id"
+                    :label="item.name"
+                    :value="item._index"
+                  >
+                    <span style="float: left">{{item.name}}</span>
+                    <span style="float: right; color: #8492a6; font-size: 13px">{{ item.address }}</span>
+                  </el-option>
                 </el-select>
               </el-form-item>
               <div class="address-body">
@@ -92,36 +108,19 @@ export default {
         imageUrl: "",
         //地址
         address: "",
-        lng:116.397128,
-        lat:39.916527,
+        lng: 116.397128,
+        lat: 39.916527
       },
       //索引地址列表
-      selectList: [
-        {
-          value: "选项1",
-          label: "黄金糕"
-        },
-        {
-          value: "选项2",
-          label: "双皮奶"
-        },
-        {
-          value: "选项3",
-          label: "蚵仔煎"
-        },
-        {
-          value: "选项4",
-          label: "龙须面"
-        },
-        {
-          value: "选项5",
-          label: "北京烤鸭"
-        }
-      ],
+      selectList: [],
+      //索引地址loading
+      selectLoading: false,
       //地图
       txMap: {},
       //地图覆盖物
-      marker:{}
+      marker: {},
+      //检索服务实例
+      searchService: {}
     };
   },
   // created() {
@@ -136,14 +135,42 @@ export default {
       this.$nextTick(() => {
         //创建腾讯地图
         this.createMap();
+        //创建检索系统
+        this.createSearchService();
       });
     },
     /**
      * 页面关闭
      */
-    close(){
+    close() {
       //数据初始化
-      Object.assign(this.$data, this.$options.data())
+      Object.assign(this.$data, this.$options.data());
+    },
+    /**
+     * 检索框数据发生变化
+     */
+    addressRemote(value) {
+      //启动loading
+      this.selectLoading = true;
+      console.log(value);
+      this.searchService.search(value);
+    },
+    /**
+     *检索框获取当前选中值
+     */
+    addressChange(val) {
+      if (!val) {
+        return;
+      }
+      //获取选中项信息
+      let item = this.selectList[val];
+      //更新经纬度
+      this.form.lng = item.latLng.lng;
+      this.form.lat = item.latLng.lat;
+      //修改当前覆盖点的位置
+      this.marker.setPosition(item.latLng);
+      //更改地图中间位置
+      this.txMap.setCenter(item.latLng);
     },
     /**
      * 创建腾讯地图
@@ -177,9 +204,45 @@ export default {
         position: location,
         map: map,
         //设置Marker被添加到Map上时的动画效果为反复弹跳
-        animation: qq.maps.MarkerAnimation.BOUNCE,
+        animation: qq.maps.MarkerAnimation.BOUNCE
       });
     },
+    /**
+     * 创建地图检索服务
+     */
+    createSearchService() {
+      let _this = this;
+      //设置Poi检索服务，用于本地检索、周边检索
+      this.searchService = new qq.maps.SearchService({
+        //设置搜索范围为北京
+        location: "北京",
+        //设置搜索页码为1
+        pageIndex: 1,
+        //设置每页的结果数为10
+        pageCapacity: 10,
+        //设置展现查询结构到infoDIV上
+        // panel: document.getElementById("infoDiv"),
+        //设置动扩大检索区域。默认值true，会自动检索指定城市以外区域。
+        autoExtend: true,
+        //检索成功的回调函数
+        complete: function(results) {
+          // console.log(results);
+          let list = results.detail.pois;
+          for (let i = 0; i < list.length; i++) {
+            list[i]._index = i;
+          }
+          _this.selectList = list;
+          //结束loading
+          _this.selectLoading = false;
+        },
+        //若服务请求失败，则运行以下函数
+        error: function(error) {
+          console.log("error", error);
+          //结束loading
+          _this.selectLoading = false;
+        }
+      });
+    }
   }
 };
 </script>
