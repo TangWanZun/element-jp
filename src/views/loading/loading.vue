@@ -35,7 +35,8 @@ export default {
         inputUser:'',
         //密码
         inputPassword:''
-      }
+      },
+      checked:false
     }
   },
   methods:{
@@ -43,7 +44,11 @@ export default {
      * 登录
      */
     submitBtn(){
-      this.$router.replace('/')
+      //提交信息
+      this.$store.dispatch('loading/userInfoAction')
+        .then(()=>{
+          this.$router.replace('/')
+        })
     }
   }
 };

@@ -15,14 +15,7 @@
           <el-tab-pane label="基本信息" name="tabs-1">
             <el-form label-position="left" ref="form" :model="form" label-width="80px" size="mini">
               <el-form-item label="精品图片">
-                <el-upload
-                  action="https://jsonplaceholder.typicode.com/posts/"
-                  list-type="picture-card"
-                  :limit="1"
-                  accept="image"
-                >
-                  <i class="el-icon-plus"></i>
-                </el-upload>
+                <uploadImg></uploadImg>
               </el-form-item>
               <el-form-item label="精品名称">
                 <el-input v-model="form.name"></el-input>
@@ -77,10 +70,11 @@
 import { setTimeout } from "timers";
 import Sortable from "sortablejs";
 import TableEditItem from "@/components/table-edit-item";
+import uploadImg from "@/components/upload-img"
 export default {
   name: "classifyModal",
   components: {
-    TableEditItem
+    TableEditItem,uploadImg
   },
   props: {},
   data() {

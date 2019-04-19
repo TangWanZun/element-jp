@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import store from '@/store/index'
 
 //获取全部路由信息
 import wxMinManage from './routers/wxMinManage'
@@ -31,9 +32,20 @@ const router = new Router({
 })
 
 router.beforeEach((to, from, next) => {
+	//如果是登录页面则直接进入
+	if(to.name=="登录页面"){
+		next();
+		return
+	}
+	//检查当前是否存在有用户信息
+	if(JSON.stringify(store.state.loading.userInfo)=="{}"){
+		//表示当前不存在用户信息，及没有登录，需要跳转到登录页面
+		next('/Loading/index')
+		return
+	}
 	if(to.path=="/"){
-		//默认跳转到数据分析
-		next('/dataAnalysis/index')
+		//默认跳转到主数据管理页面
+		next('/wxMinManage/boutique')
 		return
 	}
 	next();

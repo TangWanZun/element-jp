@@ -230,11 +230,12 @@ export default {
   display: flex;
   flex-direction: column;
   .body-header {
-    background-color: rgb(241, 241, 241);
-    height: 40px;
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #d9d9d9;
+    height: 50px;
     display: flex;
     align-items: center;
-    font-size: 16px;
+    font-size: 18px;
     padding-left: 20px;
     flex-shrink: 0;
   }

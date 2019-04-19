@@ -1,10 +1,12 @@
 <template>
   <div class="page-body">
     <div class="menu">
-      <el-menu
+      <el-menu  
         class="el-menu-vertical-demo"
         :router="true"
         :default-active="defaultActive"
+        background-color="#001529"
+        text-color="#8a8a8a"
         >
         <el-menu-item index="/wxMinManage/boutique">
           <i class="el-icon-menu"></i>
@@ -43,8 +45,9 @@ export default {
   min-height: ~'calc( 100vh - @{app-header-height} )';
 }
 .menu{
-  width: 170px;
+  width: 250px;
   box-shadow: 0 0 10px 1px rgba(0, 0, 0, 0.1);
+  background-color:#001529;
   flex-shrink: 0;
 }
 .main{

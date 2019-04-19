@@ -3,17 +3,14 @@
     <div class="body">
       <div class="header">
         <el-button type="primary" icon="el-icon-edit">保存修改</el-button>
-	  </div>
+      </div>
       <div class="content">
         <el-card class="box-card" shadow="hover">
           <div slot="header" class="clearfix">
             <span>配置信息</span>
             <!-- <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button> -->
           </div>
-          <el-form label-width="100px">
-            <el-form-item label="归属公司">
-              <el-input v-model="form.name" disabled size="small"></el-input>
-            </el-form-item>
+          <el-form label-width="90px">
             <el-form-item label="原始ID">
               <el-input v-model="form.name" size="small"></el-input>
             </el-form-item>
@@ -26,15 +23,6 @@
             <el-form-item label="AppSecret">
               <el-input v-model="form.name" size="small"></el-input>
             </el-form-item>
-            <el-form-item label="支付商号">
-              <el-input v-model="form.name" size="small"></el-input>
-            </el-form-item>
-            <el-form-item label="支付KEY">
-              <el-input v-model="form.name" size="small"></el-input>
-            </el-form-item>
-            <el-form-item label="是否禁用" prop="delivery">
-              <el-switch v-model="form.disabled" size="small"></el-switch>
-            </el-form-item>
           </el-form>
         </el-card>
         <el-card class="box-card" shadow="hover">
@@ -42,7 +30,7 @@
             <span>运行信息</span>
             <!-- <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button> -->
           </div>
-          <el-form label-width="100px">
+          <el-form label-width="90px">
             <el-form-item label="状态码">
               <el-input v-model="form.name" disabled size="small"></el-input>
             </el-form-item>
@@ -69,19 +57,14 @@
             </el-form-item>
           </el-form>
         </el-card>
-        <el-card class="box-card" shadow="hover">
+        <el-card class="box-card box-card-erwm" shadow="hover">
           <div slot="header" class="clearfix">
-            <span>第三方接口</span>
+            <span>二维码</span>
             <!-- <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button> -->
           </div>
-          <el-form label-width="100px">
-            <el-form-item label="星云ID">
-              <el-input v-model="form.name" size="small"></el-input>
-            </el-form-item>
-            <el-form-item label="星云KEY">
-              <el-input v-model="form.name" size="small"></el-input>
-            </el-form-item>
-          </el-form>
+          <div class="box-card-erwm-content">
+            <img src="https://vip.sap-unis.com/wxpc/upload/WeiXinCfg/ShareCode/gh_a8db42819a59/admin.jpg" alt="">
+          </div>
         </el-card>
       </div>
     </div>
@@ -114,20 +97,20 @@ export default {
 .body {
   display: flex;
   flex-direction: column;
-  height: ~'calc( 100vh - @{app-header-height} )';
+  height: ~"calc( 100vh - @{app-header-height} )";
   .header {
     height: 50px;
-	background-color: #f5f5f5;
-	    border-bottom: 1px solid #d9d9d9;
-	flex-shrink: 0;
-	display: flex;
-	align-items: center;
-	padding:0 20px;
-	justify-content: flex-end;
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #d9d9d9;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    justify-content: flex-end;
   }
   .content {
-	flex-wrap: 1;
-	overflow: auto;
+    flex-wrap: 1;
+    overflow: auto;
     display: flex;
     flex-wrap: wrap;
     padding: 20px;
@@ -135,11 +118,19 @@ export default {
 }
 .box-card {
   margin-bottom: 20px;
-  width: ~"calc( 50% - 20px )";
+  width: ~"calc( 33.33% - 20px )";
   flex-shrink: 0;
   margin-right: 20px;
-  &:nth-child(2) {
+  &:nth-child(3) {
     margin-right: 0px;
+  }
+}
+.box-card-erwm{
+  .box-card-erwm-content{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 }
 </style>
