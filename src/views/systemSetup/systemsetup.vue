@@ -10,18 +10,18 @@
             <span>配置信息</span>
             <!-- <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button> -->
           </div>
-          <el-form label-width="90px">
+          <el-form label-width="90px" size="mini">
             <el-form-item label="原始ID">
-              <el-input v-model="form.name" size="small"></el-input>
+              <el-input v-model="form.name"></el-input>
             </el-form-item>
             <el-form-item label="名称">
-              <el-input v-model="form.name" size="small"></el-input>
+              <el-input v-model="form.name"></el-input>
             </el-form-item>
             <el-form-item label="AppId">
-              <el-input v-model="form.name" size="small"></el-input>
+              <el-input v-model="form.name"></el-input>
             </el-form-item>
             <el-form-item label="AppSecret">
-              <el-input v-model="form.name" size="small"></el-input>
+              <el-input v-model="form.name"></el-input>
             </el-form-item>
           </el-form>
         </el-card>
@@ -30,30 +30,30 @@
             <span>运行信息</span>
             <!-- <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button> -->
           </div>
-          <el-form label-width="90px">
+          <el-form label-width="90px" size="mini">
             <el-form-item label="状态码">
-              <el-input v-model="form.name" disabled size="small"></el-input>
+              <el-input v-model="form.name" disabled ></el-input>
             </el-form-item>
             <el-form-item label="原因">
-              <el-input v-model="form.name" disabled size="small"></el-input>
+              <el-input v-model="form.name" disabled ></el-input>
             </el-form-item>
             <el-form-item label="授权令牌">
-              <el-input v-model="form.name" disabled size="small"></el-input>
+              <el-input v-model="form.name" disabled ></el-input>
             </el-form-item>
             <el-form-item label="JS令牌">
-              <el-input v-model="form.name" disabled size="small"></el-input>
+              <el-input v-model="form.name" disabled ></el-input>
             </el-form-item>
             <el-form-item label="域名">
-              <el-input v-model="form.name" disabled size="small"></el-input>
+              <el-input v-model="form.name" disabled ></el-input>
             </el-form-item>
             <el-form-item label="运行于">
-              <el-input v-model="form.name" disabled size="small"></el-input>
+              <el-input v-model="form.name" disabled ></el-input>
             </el-form-item>
             <el-form-item label="成功运行于">
-              <el-input v-model="form.name" disabled size="small"></el-input>
+              <el-input v-model="form.name" disabled ></el-input>
             </el-form-item>
             <el-form-item label="倒计时" prop="delivery">
-              <el-input v-model="form.name" disabled size="small"></el-input>
+              <el-input v-model="form.name" disabled ></el-input>
             </el-form-item>
           </el-form>
         </el-card>
@@ -131,6 +131,9 @@ export default {
     display: flex;
     justify-content: center;
     align-items: center;
+    >img{
+      width: 100%;
+    }
   }
 }
 </style>
