@@ -1,7 +1,10 @@
 <template>
   <div>
     <div class="body">
-      <div class="body-header">A系车</div>
+      <div class="body-header">
+        <el-button @click="upPage" type="primary" icon="el-icon-arrow-left" style="margin-right:10px" size="small">上一页</el-button>
+        A系车
+        </div>
       <div class="body-content" v-loading="contentLoading">
         <div
           shadow="hover"
@@ -61,7 +64,15 @@
           <div class="box-card-add-text" v-if="!isAddText" @click="isAddText=true">新建精品系列</div>
           <div v-else>
             <div>
-              <el-input v-model="classifyName" placeholder="请输入精品系列名称"></el-input>
+              <el-select v-model="classifyName" placeholder="请选择">
+                <el-option
+                  v-for="item in classOptions"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.label"
+                ></el-option>
+              </el-select>
+              <!-- <el-input v-model="classifyName" placeholder="请输入精品系列名称"></el-input> -->
             </div>
             <div class="box-card-add-footer">
               <el-button style="padding:8px 15px" type="text" @click="isAddText=false">取消</el-button>
@@ -92,7 +103,24 @@ export default {
       //获取精品系列
       dataList: [],
       //添加的精品系列名称
-      classifyName: ""
+      classifyName: "",
+      //添加精品系列
+      classOptions: [{
+          value: '选项1',
+          label: '黄金糕'
+        }, {
+          value: '选项2',
+          label: '双皮奶'
+        }, {
+          value: '选项3',
+          label: '蚵仔煎'
+        }, {
+          value: '选项4',
+          label: '龙须面'
+        }, {
+          value: '选项5',
+          label: '北京烤鸭'
+        }],
     };
   },
   created() {
@@ -133,6 +161,12 @@ export default {
       setTimeout(() => {
         this.contentLoading = false;
       }, 500);
+    },
+    /**
+     * 返回上一页
+     */
+    upPage(){
+      this.$router.go(-1)
     },
     /**
      * 添加精品
@@ -217,7 +251,8 @@ export default {
       this.classifyName = "";
       //新增系列关闭
       this.isAddText = false;
-    }
+    },
+
   }
 };
 </script>
@@ -271,7 +306,7 @@ export default {
         flex-shrink: 0;
         font-weight: bold;
         //更多按钮
-        .el-dropdown-link{
+        .el-dropdown-link {
           user-select: none;
           cursor: pointer;
         }

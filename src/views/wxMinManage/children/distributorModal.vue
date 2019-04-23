@@ -70,7 +70,7 @@
                     <el-input v-model="form.lat" disabled></el-input>
                   </el-form-item>
                   <el-form-item label="详细地址" label-width="50px">
-                    <el-input type="textarea" v-model="form.desc"></el-input>
+                    <el-input type="textarea" :rows="5" v-model="form.desc"></el-input>
                   </el-form-item>
                 </div>
               </div>
@@ -152,13 +152,15 @@ export default {
     addressRemote(value) {
       //启动loading
       this.selectLoading = true;
-      console.log(value);
+      // console.log('检索框数据发生变化',value);
+      //进行查询
       this.searchService.search(value);
     },
     /**
      *检索框获取当前选中值
      */
     addressChange(val) {
+      // console.log('检索框获取当前选中值',val)
       if (!val) {
         return;
       }
@@ -167,6 +169,8 @@ export default {
       //更新经纬度
       this.form.lng = item.latLng.lng;
       this.form.lat = item.latLng.lat;
+      //更新详细地址
+      this.form.desc = item.address + item.name;
       //修改当前覆盖点的位置
       this.marker.setPosition(item.latLng);
       //更改地图中间位置
@@ -199,12 +203,22 @@ export default {
         _this.form.lng = event.latLng.lng;
         _this.form.lat = event.latLng.lat;
       });
-      //创建一个覆盖物到当前天安门点
+      //4.创建一个覆盖物到当前天安门点
       this.marker = new qq.maps.Marker({
         position: location,
         map: map,
+        //可以拖动
+        draggable: true,
         //设置Marker被添加到Map上时的动画效果为反复弹跳
         animation: qq.maps.MarkerAnimation.BOUNCE
+      });
+       //5.设置Marker停止拖动事件
+      qq.maps.event.addListener(_this.marker, "dragend", function(event) {
+        //修改当前覆盖点的位置
+        _this.marker.setPosition(event.latLng);
+        //将经纬度赋值为input
+        _this.form.lng = event.latLng.lng;
+        _this.form.lat = event.latLng.lat;
       });
     },
     /**

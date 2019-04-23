@@ -81,14 +81,14 @@ export default {
           code: "A02",
           name: "主数据管理",
           img: require("@/assets/icon/xcxgl.svg"),
-          to: "/wxMinManage/boutique"
+          to: "/wxMinManage/cartype"
         },
-        {
-          code: "A03",
-          name: "系统设置",
-          img: require("@/assets/icon/htgl.svg"),
-          to: "/systemSetup/index"
-        }
+        // {
+        //   code: "A03",
+        //   name: "系统设置",
+        //   img: require("@/assets/icon/htgl.svg"),
+        //   to: "/systemSetup/index"
+        // }
       ]
     };
   },

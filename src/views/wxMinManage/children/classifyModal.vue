@@ -11,70 +11,39 @@
       :close-on-press-escape="false"
     >
       <div class="dialog-body">
-        <el-tabs v-model="tabsValue">
-          <el-tab-pane label="基本信息" name="tabs-1">
-            <el-form label-position="left" ref="form" :model="form" label-width="80px" size="mini">
-              <el-form-item label="精品图片">
-                <uploadImg></uploadImg>
-              </el-form-item>
-              <el-form-item label="精品名称">
-                <el-input v-model="form.name"></el-input>
-              </el-form-item>
-            </el-form>
-          </el-tab-pane>
-          <el-tab-pane label="条目编辑" name="tabs-2">
-            <div v-loading="subLoading">
-              <el-button size="mini" type="primary" @click="addButton">增加行</el-button>
-              <el-button size="mini" type="danger" :disabled="delDisabled" @click="delButton">删除行</el-button>
-              <el-table
-                :row-class-name="rowClassName"
-                :data="tableData"
-                row-key="_index"
-                stripe
-                style="width: 100%"
-                height="220"
-                size="mini"
-                @selection-change="selectionChange"
-              >
-                <el-table-column type="selection" width="30"></el-table-column>
-                <!-- <el-table-column type="index" width="50"></el-table-column> -->
-                <el-table-column :show-overflow-tooltip="true" prop="name" label="条目名称" width="130">
-                  <TableEditItem slot-scope="scope" @change="tableEditItemChange" :scope="scope"></TableEditItem>
-                </el-table-column>
-                <el-table-column
-                  :show-overflow-tooltip="true"
-                  prop="info"
-                  label="条目详情"
-                  min-width="180"
-                >
-                  <TableEditItem slot-scope="scope" @change="tableEditItemChange" :scope="scope"></TableEditItem>
-                </el-table-column>
-              </el-table>
-            </div>
-          </el-tab-pane>
-        </el-tabs>
+        <el-table
+          :row-class-name="rowClassName"
+          :data="tableData"
+          stripe
+          style="width: 100%"
+          height="300"
+          size="mini"
+          v-loading="subLoading"
+          @selection-change="selectionChange"
+        >
+          <el-table-column type="selection" width="30"></el-table-column>
+          <!-- <el-table-column type="index" width="50"></el-table-column> -->
+          <el-table-column :show-overflow-tooltip="true" prop="name" label="集采产品编码" width="130"></el-table-column>
+          <el-table-column :show-overflow-tooltip="true" prop="info" label="精品名称" min-width="180"></el-table-column>
+        </el-table>
       </div>
       <span slot="footer" class="dialog-footer">
+        <el-button @click="addItem" style="float:left">新增精品</el-button>
         <el-button @click="close">取 消</el-button>
-        <el-button type="primary" @click="close" :loading="subLoading">保 存</el-button>
+        <el-button type="primary" @click="close" :loading="subLoading">添 加</el-button>
       </span>
     </el-dialog>
     <!-- 展示大图 -->
-    <el-dialog :visible.sync="dialogVisible">
-      <img width="100%" :src="formData.imgUrl" alt>
-    </el-dialog>
+    <rightCardModal ref="rightCardModal"></rightCardModal>
   </div>
 </template>
 
 <script>
-import { setTimeout } from "timers";
-import Sortable from "sortablejs";
-import TableEditItem from "@/components/table-edit-item";
-import uploadImg from "@/components/upload-img"
+import rightCardModal from './boutique/components/right-card-modal.vue'
 export default {
   name: "classifyModal",
   components: {
-    TableEditItem,uploadImg
+    rightCardModal
   },
   props: {},
   data() {
@@ -125,10 +94,6 @@ export default {
      */
     show(data) {
       this.meValue = true;
-      // 启动拖拽
-      this.$nextTick(function() {
-        this.rowDrop();
-      });
       //需要传入数据的时候
       this.subLoading = true;
       setTimeout(() => {
@@ -144,23 +109,15 @@ export default {
           }
         ];
         this.subLoading = false;
-      }, 3000);
+      }, 500);
     },
     /**
-     * 页面关闭
+     * 页面关闭|
      */
     close() {
       //数据初始化
-      Object.assign(this.$data, this.$options.data())
+      Object.assign(this.$data, this.$options.data());
     },
-    /**
-     * 查看大图
-     */
-    handlePictureCardPreview(file) {
-      this.formData.imgUrl = file.url;
-      this.dialogVisible = true;
-    },
-    cardAddBu() {},
     /**
      * 行回调函数
      */
@@ -174,39 +131,13 @@ export default {
       this.selectionLine = selection;
     },
     /**
-     * 添加行按钮
+     * 新增精品
      */
-    addButton() {
-      // this.$refs.distributorModal.show();
-      this.tableData.push({
-        name: "",
-        info: ""
-      });
-    },
-    /**
-     * 删除行按钮
-     */
-    delButton() {
-      for (let i = this.selectionLine.length - 1; i >= 0; i--) {
-        this.tableData.splice(this.selectionLine[i]._index, 1);
-      }
-    },
-    //行拖拽
-    rowDrop() {
-      const tbody = document.querySelector(".el-table__body-wrapper tbody");
-      const _this = this;
-      Sortable.create(tbody, {
-        onEnd({ newIndex, oldIndex }) {
-          const currRow = _this.tableData.splice(oldIndex, 1)[0];
-          _this.tableData.splice(newIndex, 0, currRow);
-        }
-      });
-    },
-    /**
-     * 编辑特定行 的数据返回的时候
-     */
-    tableEditItemChange({ scope, value }) {
-      this.tableData[scope.$index][scope.column.property] = value;
+    addItem(){
+      //这里需要注意，当在此页面添加一个新的精品的时候，精品
+      //上的适配车型将自动添加本页面展示的车型
+      this.$refs.rightCardModal.show();
+      
     }
   }
 };

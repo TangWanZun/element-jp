@@ -3,7 +3,12 @@
     <div class="body">
       <el-card>
         <div slot="header" class="clearfix">
-          <el-button icon="el-icon-plus" style="padding:10px 15px" type="primary" @click="dialogVisible=true">添加新车型</el-button>
+          <el-button
+            icon="el-icon-plus"
+            style="padding:10px 15px"
+            type="primary"
+            @click="cartypeModalShow"
+          >添加新车型</el-button>
         </div>
         <div class="list">
           <el-card
@@ -19,7 +24,8 @@
                 <i class="el-icon-arrow-right"></i>
               </div>
               <div class="item-setup">
-                <i class="el-icon-setting" @click.stop="boutiqueModalShow"></i>
+                <i class="el-icon-delete" @click.stop="deleteBtn" style="margin-right:10px"></i>
+                <i class="el-icon-setting" @click.stop="cartypeModalShow"></i>
               </div>
             </div>
           </el-card>
@@ -27,16 +33,16 @@
       </el-card>
     </div>
     <!-- 设置与添加车型 -->
-    <boutiqueModal ref="boutiqueModalRef"></boutiqueModal>
+    <cartypeModal ref="cartypeModalRef"></cartypeModal>
   </div>
 </template>
 
 <script>
-import boutiqueModal from './boutiqueModal'
+import cartypeModal from "./cartypeModal";
 export default {
-  name: "boutique",
-  components:{
-    boutiqueModal
+  name: "cartype",
+  components: {
+    cartypeModal
   },
   data() {
     return {
@@ -45,18 +51,40 @@ export default {
       dialogVisible: false
     };
   },
-  methods:{
+  methods: {
     /**
      * 点击传递
      */
-    push(){
-      this.$router.push('/wxMinManage/classify');
+    push() {
+      this.$router.push("/wxMinManage/classify");
     },
     /**
      * 点击打开车型编辑
      */
-    boutiqueModalShow(){
-      this.$refs.boutiqueModalRef.show();
+    cartypeModalShow() {
+      this.$refs.cartypeModalRef.show();
+    },
+    /**
+     * 删除车型
+     */
+    deleteBtn() {
+      this.$confirm("此操作将永久删除该车型?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          this.$message({
+            type: "success",
+            message: "删除成功!"
+          });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消删除"
+          });
+        });
     }
   }
 };
@@ -106,8 +134,10 @@ export default {
       font-size: 25px;
       color: white;
       cursor: pointer;
-      &:hover {
-        opacity: 0.5;
+      > i {
+        &:hover {
+          opacity: 0.5;
+        }
       }
     }
   }
@@ -132,7 +162,7 @@ export default {
     }
   }
   //车型名称
-  .dialog-name{
+  .dialog-name {
     margin-top: 10px;
     font-size: 15px;
   }

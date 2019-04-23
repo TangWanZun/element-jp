@@ -16,9 +16,14 @@ export default [
 				component: r => require.ensure([], () => r(require('@/views/wxMinManage/main')), 'wxMinManage'),
 				children: [
 					{
+						path: 'cartype',
+						name: '车型定义',
+						component: r => require.ensure([], () => r(require('@/views/wxMinManage/children/cartype')), 'cartype'),
+					},
+					{
 						path: 'boutique',
 						name: '精品管理',
-						component: r => require.ensure([], () => r(require('@/views/wxMinManage/children/boutique')), 'boutique'),
+						component: r => require.ensure([], () => r(require('@/views/wxMinManage/children/boutique/index')), 'boutique'),
 					},
 					{
 						path: 'distributor',
