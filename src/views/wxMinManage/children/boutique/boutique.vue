@@ -1,7 +1,7 @@
 <template>
   <div style="height:100%">
     <div class="body">
-      <!-- 精品系列 -->
+      <!-- 精品分类 -->
       <leftCard class="left-card" @row-click="rowClick"></leftCard>
       <!-- 精品详情 -->
       <rightCard class="right-card" ref="rightCard"> </rightCard>
@@ -19,12 +19,11 @@ export default {
   },
   methods:{
     /**
-     * 单击系列信息行信息的时候
+     * 单击分类信息行信息的时候
      */
     rowClick(row, column, event){
-      // console.log(row)
       //更新右侧精品详情的信息
-      this.$refs.rightCard.dataShow(row.id);
+      this.$refs.rightCard.dataShow(Object.assign({},row));
     }
   }
 };
@@ -36,14 +35,14 @@ export default {
   height: 100%;
   display: flex;
 }
-// 用于展示精品系列
+// 用于展示精品分类
 .left-card {
-  width: 500px;
+  width: 280px;
   height: 100%;
 }
 //展示相应的精品
 .right-card {
-  margin-left: 20px;
+  margin-left: 10px;
   height: 100%;
   flex-grow: 1;
 }

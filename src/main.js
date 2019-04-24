@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import ElementUI from 'element-ui';
 
+import {request} from '@/library/request'
 import App from './App.vue'
 import router from './router/index'
 import store from './store/index'
@@ -9,7 +10,11 @@ import './main.less'
 
 Vue.config.productionTip = false
 
+
 Vue.use(ElementUI);
+
+//挂载request
+Vue.prototype.$request = request;
 
 new Vue({
   router,

@@ -15,22 +15,16 @@
           <el-tab-pane label="基本信息" name="tabs-1">
             <el-form label-position="left" ref="form" :model="form" label-width="90px" size="mini">
               <el-form-item label="经销商图片">
-                <el-upload
-                  action="https://jsonplaceholder.typicode.com/posts/"
-                  list-type="picture-card"
-                  :limit="1"
-                >
-                  <i class="el-icon-plus"></i>
-                </el-upload>
+                <uploadImg @on-upload="ImgOnUpload"  :imgUrl="form.DocJson.ImgUrl"></uploadImg>
               </el-form-item>
               <el-form-item label="经销商名称">
-                <el-input v-model="form.name"></el-input>
+                <el-input v-model="form.DocJson.Name"></el-input>
               </el-form-item>
               <el-form-item label="经销商电话">
-                <el-input v-model="form.phone"></el-input>
+                <el-input type="number" v-model="form.DocJson.Phone"></el-input>
               </el-form-item>
               <el-form-item label="门店介绍">
-                <el-input type="textarea" v-model="form.desc"></el-input>
+                <el-input type="textarea" v-model="form.DocJson.Descript"></el-input>
               </el-form-item>
             </el-form>
           </el-tab-pane>
@@ -39,7 +33,7 @@
               <el-form-item label="检索地址">
                 <!-- <el-input v-model="form.address" @change="addressChange"></el-input> -->
                 <el-select
-                  v-model="form.address"
+                  v-model="form.DocJson.AddressName"
                   placeholder="请填写经销商位置"
                   style="width:100%"
                   :filterable="true"
@@ -64,13 +58,13 @@
                 <div class="address-map" id="containermap"></div>
                 <div>
                   <el-form-item label="经度" label-width="50px">
-                    <el-input v-model="form.lng" disabled></el-input>
+                    <el-input v-model="form.DocJson.Longitude" disabled></el-input>
                   </el-form-item>
                   <el-form-item label="维度" label-width="50px">
-                    <el-input v-model="form.lat" disabled></el-input>
+                    <el-input v-model="form.DocJson.Latitude" disabled></el-input>
                   </el-form-item>
                   <el-form-item label="详细地址" label-width="50px">
-                    <el-input type="textarea" :rows="5" v-model="form.desc"></el-input>
+                    <el-input type="textarea" :rows="5" v-model="form.DocJson.AddressDetails"></el-input>
                   </el-form-item>
                 </div>
               </div>
@@ -80,20 +74,26 @@
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="close">取 消</el-button>
-        <el-button type="primary" @click="close">保 存</el-button>
+        <el-button :loading="submitLoad" type="primary" @click="submit">保 存</el-button>
       </span>
     </el-dialog>
   </div>
 </template>
 
 <script>
+import uuidv1 from "uuid/v1";
+import uploadImg from "@/components/upload-img";
 export default {
   name: "distributorModal",
   props: {},
-  watch: {},
+  components: {
+    uploadImg
+  },
   data() {
     return {
       meValue: this.value,
+      //按钮是否在上传中
+      submitLoad: false,
       //是否添加条目
       addItemShow: false,
       //是否显示页面
@@ -102,14 +102,20 @@ export default {
       tabs: "tabs-1",
       //表单数据
       form: {
-        name: "",
-        phone: "",
-        desc: "",
-        imageUrl: "",
-        //地址
-        address: "",
-        lng: 116.397128,
-        lat: 39.916527
+        DocType: "Dealer",
+        ActionType: "AddOrUpdate",
+        UnionGuid: "",
+        UnionGuidTemp: "",
+        DocJson: {
+          Name: "", //名称
+          Descript: "", //门店介绍
+          ImgUrl:"", //图片
+          Phone: "", //电话
+          Longitude: "", //经度
+          Latitude: "", //纬度
+          AddressName: "", //地址简称
+          AddressDetails: "" //地址详情
+        }
       },
       //索引地址列表
       selectList: [],
@@ -120,7 +126,9 @@ export default {
       //地图覆盖物
       marker: {},
       //检索服务实例
-      searchService: {}
+      searchService: {},
+      //当前是否为新增状态
+      addState: true
     };
   },
   // created() {
@@ -130,8 +138,40 @@ export default {
     /**
      * 页面开启
      */
-    show() {
+    show(data) {
       this.meValue = true;
+      //产生一个GUID
+      let guid = uuidv1();
+      //判断是新增还是修改
+      if (!data) {
+        //新增
+        this.addState = true;
+        this.form.UnionGuidTemp = guid;
+        this.form.UnionGuid = guid;
+      } else {
+        //修改
+        this.addState = false;
+        //赋值数据
+        this.form.DocJson = data;
+        this.form.DocId = data.UnionId;
+        this.form.UnionGuid = data.UnionGuid;
+        this.form.UnionGuidTemp = guid;
+        // this.form = {
+        //   DocType: "Dealer",
+        //   UnionGuid: "",
+        //   UnionGuidTemp: "",
+        //   DocJson: {
+        //     Name:data.Name, //名称
+        //     Descript: data.Descript, //门店介绍
+        //     ImgUrl:data.ImgUrl, //图片
+        //     Phone: "", //电话
+        //     Longitude: data.Longitude, //经度
+        //     Latitude:data.Latitude, //纬度
+        //     AddressName: data.AddressName, //地址简称
+        //     AddressDetails: data.AddressDetails //地址详情
+        //   }
+        // };
+      }
       this.$nextTick(() => {
         //创建腾讯地图
         this.createMap();
@@ -145,6 +185,31 @@ export default {
     close() {
       //数据初始化
       Object.assign(this.$data, this.$options.data());
+    },
+    /**
+     * 页面保存
+     */
+    submit() {
+      // console.log(this.form);
+      this.submitLoad = true;
+      this.$request({
+        url: "/DoAction/Submit",
+        data: this.form
+      })
+        .then(res => {
+          // console.log("res", res);
+          this.$emit("on-upload", res);
+          this.close();
+        })
+        .finally(() => {
+          this.submitLoad = false;
+        });
+    },
+    /**
+     * 图片数据更新
+     */
+    ImgOnUpload(data){
+      this.form.DocJson.ImgUrl = data;
     },
     /**
      * 检索框数据发生变化
@@ -166,11 +231,14 @@ export default {
       }
       //获取选中项信息
       let item = this.selectList[val];
-      //更新经纬度
-      this.form.lng = item.latLng.lng;
-      this.form.lat = item.latLng.lat;
+      // console.log(item)
+      //更新经纬度item
+      this.form.DocJson.Longitude = item.latLng.lng;
+      this.form.DocJson.Latitude = item.latLng.lat;
       //更新详细地址
-      this.form.desc = item.address + item.name;
+      this.form.DocJson.AddressDetails = item.address + item.name;
+      //更新简单地址
+      this.form.DocJson.AddressName = item.name;
       //修改当前覆盖点的位置
       this.marker.setPosition(item.latLng);
       //更改地图中间位置
@@ -200,8 +268,8 @@ export default {
         //修改当前覆盖点的位置
         _this.marker.setPosition(event.latLng);
         //将经纬度赋值为input
-        _this.form.lng = event.latLng.lng;
-        _this.form.lat = event.latLng.lat;
+        _this.form.DocJson.Longitude = event.latLng.lng;
+        _this.form.DocJson.Latitude = event.latLng.lat;
       });
       //4.创建一个覆盖物到当前天安门点
       this.marker = new qq.maps.Marker({
@@ -212,13 +280,13 @@ export default {
         //设置Marker被添加到Map上时的动画效果为反复弹跳
         animation: qq.maps.MarkerAnimation.BOUNCE
       });
-       //5.设置Marker停止拖动事件
+      //5.设置Marker停止拖动事件
       qq.maps.event.addListener(_this.marker, "dragend", function(event) {
         //修改当前覆盖点的位置
         _this.marker.setPosition(event.latLng);
         //将经纬度赋值为input
-        _this.form.lng = event.latLng.lng;
-        _this.form.lat = event.latLng.lat;
+        _this.form.DocJson.Longitude = event.latLng.lng;
+        _this.form.DocJson.Latitude = event.latLng.lat;
       });
     },
     /**

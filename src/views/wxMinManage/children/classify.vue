@@ -26,7 +26,7 @@
                   <el-dropdown-item
                     icon="el-icon-delete"
                     :command="{name:'delClass',key:key}"
-                  >删除当前系列</el-dropdown-item>
+                  >删除当前分类</el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
             </div>
@@ -61,7 +61,7 @@
           </div>
         </div>
         <el-card class="box-card-add" shadow="hover" :class="{'box-card-add-show':isAddText}">
-          <div class="box-card-add-text" v-if="!isAddText" @click="isAddText=true">新建精品系列</div>
+          <div class="box-card-add-text" v-if="!isAddText" @click="isAddText=true">新建精品分类</div>
           <div v-else>
             <div>
               <el-select v-model="classifyName" placeholder="请选择">
@@ -72,7 +72,7 @@
                   :value="item.label"
                 ></el-option>
               </el-select>
-              <!-- <el-input v-model="classifyName" placeholder="请输入精品系列名称"></el-input> -->
+              <!-- <el-input v-model="classifyName" placeholder="请输入精品分类名称"></el-input> -->
             </div>
             <div class="box-card-add-footer">
               <el-button style="padding:8px 15px" type="text" @click="isAddText=false">取消</el-button>
@@ -100,11 +100,11 @@ export default {
       contentLoading: true,
       //新建精品是否启动
       isAddText: false,
-      //获取精品系列
+      //获取精品分类
       dataList: [],
-      //添加的精品系列名称
+      //添加的精品分类名称
       classifyName: "",
-      //添加精品系列
+      //添加精品分类
       classOptions: [{
           value: '选项1',
           label: '黄金糕'
@@ -179,9 +179,9 @@ export default {
      */
     dropdownCommand(obj) {
       switch (obj.name) {
-        //点击删除当前系列
+        //点击删除当前分类
         case "delClass": {
-          this.$confirm("此操作将永久删除该系列, 是否继续?", "提示", {
+          this.$confirm("此操作将永久删除该分类, 是否继续?", "提示", {
             confirmButtonText: "确定",
             cancelButtonText: "取消",
             type: "warning"
@@ -244,12 +244,12 @@ export default {
         list: []
       });
       this.$message({
-        message: "系列添加成功",
+        message: "分类添加成功",
         type: "success"
       });
       //input框清空
       this.classifyName = "";
-      //新增系列关闭
+      //新增分类关闭
       this.isAddText = false;
     },
 
@@ -391,7 +391,7 @@ export default {
         background-color: #eee;
       }
     }
-    // 添加精品系列
+    // 添加精品分类
     .box-card-add {
       width: 250px;
       height: 65px;

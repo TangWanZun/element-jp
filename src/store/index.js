@@ -1,14 +1,20 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import VuexPersistence from 'vuex-persist'
 
 //获取全部的modules
-import loading from './modules/loading'
+import user from './modules/user'
 
 Vue.use(Vuex)
 
+//信息持久化
+const vuexLocal = new VuexPersistence({
+  storage: window.localStorage
+})
+
 export default new Vuex.Store({
   modules:{
-    loading
+    user
   },
   state: {
     
@@ -18,5 +24,6 @@ export default new Vuex.Store({
   },
   actions: {
 
-  }
+  },
+  plugins: [vuexLocal.plugin]
 })

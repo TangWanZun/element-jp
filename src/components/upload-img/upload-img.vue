@@ -2,41 +2,68 @@
   <div>
     <div class="upload-img">
       <div class="upload-img-show" v-if="meImgUrl">
-        <img :src="meImgUrl" alt srcset>
+        <img :src="imgRootUrl+meImgUrl" alt srcset>
         <div class="upload-img-btn">
           <i class="el-icon-zoom-in" @click="bigImage"></i>
-          <i class="el-icon-delete"></i>
+          <i class="el-icon-delete" @click="deleteImage"></i>
         </div>
       </div>
+      <!-- <div v-else>
+        <form :action="uploadUrl" method="post" enctype="multipart/form-data">
+          <input type="file" name="mediaFile" id="">
+          <input type="hidden" name="docType" value="Dealer">
+          <button type="submit">上传</button>
+        </form>
+      </div> -->
       <el-upload
         v-else
-        action="https://jsonplaceholder.typicode.com/posts/"
+        :action="uploadUrl"
+         accept="image/png,image/jpeg"
         list-type="picture-card"
         :on-success="handleAvatarSuccess"
+        :before-remove="deleteImage"
         :before-upload="beforeAvatarUpload"
+        name="mediaFile"
+        :data="data"
+        :headers="headers"
+        with-credentials
       >
         <i class="el-icon-plus upload-img-icon"></i>
       </el-upload>
     </div>
     <!-- 用于查看大图的 -->
     <el-dialog :visible.sync="bigImageShow" append-to-body>
-      <img :src="meImgUrl" style="width:100%" alt>
+      <img :src="imgRootUrl+meImgUrl" style="width:100%" alt>
     </el-dialog>
   </div>
 </template>
 
 <script>
+import {FILE_URL,IMG_URL} from '@/config'
+
 export default {
   name: "uploadImg",
   props: {
     imgUrl: {
-      type: String
+      type: String,
+      default:''
     }
   },
   data() {
     return {
+      uploadUrl:FILE_URL,
       bigImageShow: false,
-      meImgUrl: this.imgUrl
+      meImgUrl: this.imgUrl,
+      imgRootUrl:IMG_URL,
+      //上传图片的头部
+      headers:{
+        // 'Content-Type':'application/x-www-form-urlencoded',
+        // 'Cookie':this.$store.state.user.rsid
+      },
+      //上传附带的额外参数
+      data:{
+        docType:'Dealer'
+      }
     };
   },
   watch: {
@@ -45,6 +72,16 @@ export default {
     }
   },
   methods: {
+    submit(){
+      
+      return false
+    },
+    /**
+     * 删除图片
+     */
+    deleteImage(){
+      this.$emit('on-upload','')
+    },
     /**
      * 查看大图
      */
@@ -56,6 +93,9 @@ export default {
      */
     handleAvatarSuccess(res, file) {
       console.log(res);
+      if(res.Success){
+        this.$emit('on-upload',res.Data)
+      }
       this.imageUrl = URL.createObjectURL(file.raw);
     },
     /**

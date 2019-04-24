@@ -45,9 +45,12 @@ export default {
      */
     submitBtn(){
       //提交信息
-      this.$store.dispatch('loading/userInfoAction')
+      this.$store.dispatch('user/userLoginAction',{
+        userName:this.formData.inputUser,
+        password:this.formData.inputPassword
+      })
         .then(()=>{
-          this.$router.replace('/')
+          this.$router.replace('/');
         })
     }
   }

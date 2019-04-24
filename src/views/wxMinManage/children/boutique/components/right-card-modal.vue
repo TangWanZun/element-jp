@@ -15,11 +15,21 @@
           <!-- 基本信息 -->
           <el-tab-pane label="基本信息" name="tabs-1">
             <el-form label-position="left" ref="form" :model="form" label-width="80px" size="mini">
+              <el-form-item label="精品分类">
+                <el-select v-model="form.DocJson.ItemGroup" clearable placeholder="请选择">
+                  <el-option
+                    v-for="item in baseSelectOptions"
+                    :key="item.UnionGuid"
+                    :label="item.Name"
+                    :value="item.UnionGuid"
+                  ></el-option>
+                </el-select>
+              </el-form-item>
               <el-form-item label="精品图片">
-                <uploadImg></uploadImg>
+                <uploadImg :imgUrl="form.DocJson.ImgUrl" @on-upload="form.DocJson.ImgUrl=$emite"></uploadImg>
               </el-form-item>
               <el-form-item label="精品名称">
-                <el-input v-model="form.name"></el-input>
+                <el-input v-model="form.DocJson.Name"></el-input>
               </el-form-item>
             </el-form>
           </el-tab-pane>
@@ -30,7 +40,7 @@
               <el-button size="mini" type="danger" :disabled="delDisabled" @click="delButton">删除行</el-button>
               <el-table
                 :row-class-name="rowClassName"
-                :data="tableData"
+                :data="form.DocJson.List1"
                 row-key="_index"
                 stripe
                 style="width: 100%"
@@ -40,12 +50,12 @@
               >
                 <el-table-column type="selection" width="30"></el-table-column>
                 <!-- <el-table-column type="index" width="50"></el-table-column> -->
-                <el-table-column :show-overflow-tooltip="true" prop="name" label="条目名称" width="130">
+                <el-table-column :show-overflow-tooltip="true" prop="Name" label="条目名称" width="130">
                   <TableEditItem slot-scope="scope" @change="tableEditItemChange" :scope="scope"></TableEditItem>
                 </el-table-column>
                 <el-table-column
                   :show-overflow-tooltip="true"
-                  prop="info"
+                  prop="value"
                   label="条目详情"
                   min-width="180"
                 >
@@ -57,7 +67,14 @@
           <!-- 适配车型 -->
           <el-tab-pane label="适配车型" name="tabs-3">
             <div v-loading="table2Loading">
-              <el-select size="mini" style="margin-right:10px" v-model="table2Select" multiple collapse-tags placeholder="请选择">
+              <el-select
+                size="mini"
+                style="margin-right:10px"
+                v-model="table2Select"
+                multiple
+                collapse-tags
+                placeholder="请选择"
+              >
                 <el-option
                   v-for="item in table2SelectOptions"
                   :key="item.index"
@@ -93,8 +110,8 @@
         </el-tabs>
       </div>
       <span slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submit" :loading="subLoading">保 存</el-button>
         <el-button @click="close">取 消</el-button>
-        <el-button type="primary" @click="close" :loading="subLoading">保 存</el-button>
       </span>
     </el-dialog>
     <cartypeModal ref="cartypeModal"></cartypeModal>
@@ -105,7 +122,8 @@
 import Sortable from "sortablejs";
 import TableEditItem from "@/components/table-edit-item";
 import uploadImg from "@/components/upload-img";
-import cartypeModal from "../../cartypeModal.vue"
+import cartypeModal from "../../cartypeModal.vue";
+import uuidv1 from "uuid/v1";
 export default {
   name: "rightCardModal",
   components: {
@@ -125,22 +143,34 @@ export default {
       tableLoading: false,
       //适配车型表loading
       table2Loading: false,
-      //是否打开大图
-      dialogVisible: false,
-      //大图图片
-      formData: {
-        imgUrl: ""
-      },
+      //是否为新增数据
+      isAddData: true,
+      //精品分类信息
+      baseSelectOptions: [
+        {
+
+        }
+      ],
       //表单数据
       form: {
-        name: "",
-        phone: "",
-        desc: "",
-        imageUrl: ""
+        DocType: "JpItem",
+        ActionType: "AddOrUpdate",
+        UnionGuid: "",
+        UnionGuidTemp: "",
+        DocJson: {
+          //标题信息
+          Name: "",
+          ImgUrl: "",
+          ItemGroup: "", //精品分类的主键
+          IsAdapAll: false, //是否适配全车系
+          //行信息-条目
+          List1: [],
+          //行信息-适车系
+          List2: []
+        }
       },
       //tabs当前默认的页签
       tabsValue: "tabs-1",
-      tableData: [],
       //条目编辑选择的行信息
       selectionLine: [],
       //适配车i选哪个选择的行信息
@@ -148,29 +178,9 @@ export default {
       //适配车型的表格
       table2Data: [],
       //适配车型的选择框
-      table2Select:'',
+      table2Select: "",
       //适配 车型选择的内容
-      table2SelectOptions: [{
-          index:0,
-          itemCode: 'B01',
-          itemName: 'A系'
-        }, {
-          index:1,
-          itemCode: 'B02',
-          itemName: 'B系'
-        }, {
-          index:2,
-          itemCode: 'B03',
-          itemName: 'S系'
-        }, {
-          index:3,
-          itemCode: 'B04',
-          itemName: 'SLC'
-        }, {
-          index:4,
-          itemCode: 'B05',
-          itemName: 'C系'
-        }],
+      table2SelectOptions: []
     };
   },
   created() {
@@ -199,7 +209,7 @@ export default {
      * 显示
      * 系统页面初始化
      */
-    show(data) {
+    show(isAdd, data) {
       this.meValue = true;
       //启动保存按钮loading
       this.subLoading = true;
@@ -207,38 +217,79 @@ export default {
       this.$nextTick(function() {
         this.rowDrop();
       });
-      //获取数据
-      Promise.all([this.getData1(), this.getData2()]).then(res => {
+      //获取精品分类信息
+      this.getItemGroup();
+      if (isAdd) {
+        //当前为新增数据
+        this.isAddData = true;
         this.subLoading = false;
+        this.form.DocJson.ItemGroup = data._unionCode;
+      } else {
+        this.isAddData = false;
+        //获取数据
+        Promise.all([this.getData1(), this.getData2()]).then(res => {
+          console.log(123,res);
+          this.subLoading = false;
+        });
+      }
+    },
+    /**
+     * 获取全部精品分类信息
+     */
+    getItemGroup() {
+      this.$request({
+        url: "/DoAction/GetSingleList",
+        data: {
+          DocType: "JpItem",
+          ActionType: "ItemGroupSel"
+        }
+      }).then(res => {
+        this.baseSelectOptions = res.List || [];
       });
     },
     /**
      * 获取条目编辑信息
      */
     getData1() {
-      return new Promise((resolve, reject) => {
-        this.tableLoading = true;
-        setTimeout(() => {
-          //获取条目编辑的信息
-          this.tableData = [
-            {
-              name: "品牌(ANZ)",
-              info: "安之享"
-            },
-            {
-              name: "编码采集",
-              info: "JC-BB-AAS03-DNVJ"
-            }
-          ];
-          this.tableLoading = false;
-          resolve();
-        }, 1000);
+      return this.$request({
+        url: "/DoAction/GetSingleList",
+        data: {
+          DocType: "JpItem",
+          ActionType: "JpItem2",
+          DocId: "" //精品项目主键
+        }
       });
+      // return new Promise((resolve, reject) => {
+      //   this.tableLoading = true;
+      //   setTimeout(() => {
+      //     //获取条目编辑的信息
+      //     this.form.DocJson.List1 = [
+      //       {
+      //         name: "品牌(ANZ)",
+      //         info: "安之享"
+      //       },
+      //       {
+      //         name: "编码采集",
+      //         info: "JC-BB-AAS03-DNVJ"
+      //       }
+      //     ];
+      //     this.tableLoading = false;
+      //     resolve();
+      //   }, 1000);
+      // });
     },
     /**
      * 获取适配车型信息
      */
     getData2() {
+      return this.$request({
+        url: "/DoAction/GetSingleList",
+        data: {
+          DocType: "JpItem",
+          ActionType: "JpItem2",
+          DocId: "" //精品项目主键
+        }
+      });
       return new Promise((resolve, reject) => {
         this.table2Loading = true;
         setTimeout(() => {
@@ -262,18 +313,26 @@ export default {
       Object.assign(this.$data, this.$options.data());
     },
     /**
-     * 查看大图
+     * 数据保存
      */
-    handlePictureCardPreview(file) {
-      this.formData.imgUrl = file.url;
-      this.dialogVisible = true;
+    submit(){
+      let guid = uuidv1();
+      this.form.UnionGuidTemp = guid;
+      if(this.isAddData){
+        //新增
+        this.form.UnionGuid = guid;
+      }else{
+        //修改
+
+      }
+      console.log(this.form)
     },
     cardAddBu() {},
     /**
      * 行回调函数
      */
     rowClassName({ row, rowIndex }) {
-      row._index = rowIndex;
+      row.LineId = rowIndex;
     },
     /**
      * 当选择项发生变化的时候
@@ -288,13 +347,13 @@ export default {
       this.selectionLine2 = selection;
     },
     /**
-     * 添加行按钮
+     * 条目编辑添加行按钮
      */
     addButton() {
       // this.$refs.distributorModal.show();
-      this.tableData.push({
-        name: "",
-        info: ""
+      this.form.DocJson.List1.push({
+        Name: "",
+        value: ""
       });
     },
     /**
@@ -304,24 +363,24 @@ export default {
       // console.log(this.table2Select);
       //将数据添加到表中
       let arr = this.table2Select;
-      for(let i=0;i<arr.length;i++){
+      for (let i = 0; i < arr.length; i++) {
         let item = this.table2SelectOptions[arr[i]];
         //这里需要进行数据去重
         let isCf = false;
-        for(let j=0;j<this.table2Data.length;j++){
-          if(this.table2Data[j].itemCode==item.itemCode){
-            isCf=true;
+        for (let j = 0; j < this.table2Data.length; j++) {
+          if (this.table2Data[j].itemCode == item.itemCode) {
+            isCf = true;
           }
         }
-        if(!isCf)this.table2Data.push(item) 
+        if (!isCf) this.table2Data.push(item);
       }
       //清空增加行
-      this.table2Select=[]
+      this.table2Select = [];
     },
     /**
      * 新增车型
      */
-    addCarType(){
+    addCarType() {
       this.$refs.cartypeModal.show();
     },
     /**
@@ -329,7 +388,7 @@ export default {
      */
     delButton() {
       for (let i = this.selectionLine.length - 1; i >= 0; i--) {
-        this.tableData.splice(this.selectionLine[i]._index, 1);
+        this.form.DocJson.List1.splice(this.selectionLine[i]._index, 1);
       }
     },
     /**
@@ -346,8 +405,8 @@ export default {
       const _this = this;
       Sortable.create(tbody, {
         onEnd({ newIndex, oldIndex }) {
-          const currRow = _this.tableData.splice(oldIndex, 1)[0];
-          _this.tableData.splice(newIndex, 0, currRow);
+          const currRow = _this.form.DocJson.List1.splice(oldIndex, 1)[0];
+          _this.form.DocJson.List1.splice(newIndex, 0, currRow);
         }
       });
     },
@@ -355,7 +414,7 @@ export default {
      * 编辑特定行 的数据返回的时候
      */
     tableEditItemChange({ scope, value }) {
-      this.tableData[scope.$index][scope.column.property] = value;
+      this.form.DocJson.List1[scope.$index][scope.column.property] = value;
     }
   }
 };

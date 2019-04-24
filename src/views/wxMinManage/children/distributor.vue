@@ -1,49 +1,55 @@
 <template>
-  <div>
-    <div class="body">
-      <el-card>
-        <div slot="header" class="clearfix">
-          <el-input v-model="searchInput" size="small" placeholder="请输入查询条件" style="width:200px;margin-right:10px"></el-input>
-          <el-button type="primary" size="small" icon="el-icon-search" circle></el-button>
-          <el-button type="primary" size="small" @click="addButton">新增</el-button>
-          <el-button type="danger" size="small" :disabled="delDisabled" @click="delButton">删除</el-button>
-        </div>
-        <el-table
-          :row-class-name="rowClassName"
-          :data="tableData"
-          stripe
-          style="width: 100%"
-          v-loading="tableLoading"
-          height="600px"
-          @selection-change="selectionChange"
-          @row-dblclick="rowDblclick"
-        >
-          <el-table-column type="selection" width="55"></el-table-column>
-          <el-table-column type="index" width="50"></el-table-column>
-          <el-table-column prop="name" label="经销商名称" width="250"></el-table-column>
-          <el-table-column prop="phone" label="电话" width="180"></el-table-column>
-          <el-table-column prop="address" label="地址"></el-table-column>
-        </el-table>
-        <div class="card-footer">
-          <el-pagination
-            background
-            layout="prev, pager, next,jumper"
-            :total="1000"
-            @current-change="currentChange"
-          ></el-pagination>
-        </div>
-      </el-card>
-    </div>
-    <distributorModal ref="distributorModal"></distributorModal>
+  <div style="height:100%;padding:15px">
+    <card-table style="height:100%">
+      <template slot="header">
+        <el-input
+          v-model="searchInput"
+          size="small"
+          placeholder="请输入查询条件"
+          style="width:200px;margin-right:10px"
+          @keyup.native.enter="getData"
+        ></el-input>
+        <el-button type="primary" size="small" icon="el-icon-search" circle @click="getData"></el-button>
+        <el-button type="primary" size="small" @click="addButton">新增</el-button>
+        <el-button type="danger" size="small" :disabled="delDisabled" @click="delButton">删除</el-button>
+      </template>
+      <el-table
+        :row-class-name="rowClassName"
+        :data="tableData"
+        stripe
+        style="width: 100%"
+        v-loading="tableLoading"
+        height="100%"
+        @selection-change="selectionChange"
+        @row-dblclick="rowDblclick"
+      >
+        <el-table-column type="selection" width="55"></el-table-column>
+        <el-table-column type="index" width="50"></el-table-column>
+        <el-table-column prop="Name" label="经销商名称" width="250" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="Phone" label="电话" width="180" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="AddressDetails" label="地址" show-overflow-tooltip></el-table-column>
+      </el-table>
+      <template slot="footer">
+        <el-pagination
+          background
+          layout="prev, pager, next,jumper"
+          :total="pageTotal"
+          @current-change="currentChange"
+        ></el-pagination>
+      </template>
+    </card-table>
+    <distributorModal ref="distributorModal" @on-upload="modalUpload"></distributorModal>
   </div>
 </template>
 
 <script>
 import distributorModal from "./distributorModal";
+import cardTable from "@/components/card-table";
 import { setTimeout } from "timers";
 export default {
   components: {
-    distributorModal
+    distributorModal,
+    cardTable
   },
   data() {
     return {
@@ -53,7 +59,9 @@ export default {
       //列表loading
       tableLoading: false,
       //搜索
-      searchInput:''
+      searchInput: "",
+      //总记录数量
+      pageTotal: 0
     };
   },
   computed: {
@@ -62,65 +70,34 @@ export default {
       return this.selectionLine.length == 0;
     }
   },
-  created(){
-    this.getData()
+  created() {
+    this.getData();
   },
   methods: {
     /**
      * 获取数据
      */
-    getData(page=0) {
+    getData(page = 1) {
       this.tableLoading = true;
-      setTimeout(() => {
-        this.tableData = [
-          {
-            name: "北京鹏龙经销商",
-            phone: "010-0675331",
-            address: "上海市普陀区金沙江路 1516 弄"
-          },
-          {
-            name: "北京鹏龙经销商",
-            phone: "010-0675331",
-            address: "上海市普陀区金沙江路 1518 弄"
-          },
-          {
-            name: "北京鹏龙经销商",
-            phone: "010-0675331",
-            address: "上海市普陀区金沙江路 1517 弄"
-          },
-          {
-            name: "北京鹏龙经销商",
-            phone: "010-0675331",
-            address: "上海市普陀区金沙江路 1519 弄"
-          },
-          {
-            name: "北京鹏龙经销商",
-            phone: "010-0675331",
-            address: "上海市普陀区金沙江路 1516 弄"
-          },
-          {
-            name: "北京鹏龙经销商",
-            phone: "010-0675331",
-            address: "上海市普陀区金沙江路 1518 弄"
-          },
-          {
-            name: "北京鹏龙经销商",
-            phone: "010-0675331",
-            address: "上海市普陀区金沙江路 1517 弄"
-          },
-          {
-            name: "北京鹏龙经销商",
-            phone: "010-0675331",
-            address: "上海市普陀区金沙江路 1519 弄"
-          },
-          {
-            name: "北京鹏龙经销商",
-            phone: "010-0675331",
-            address: "上海市普陀区金沙江路 1516 弄"
-          }
-        ];
-        this.tableLoading = false;
-      }, 500);
+      this.$request({
+        url: "/DoAction/GetListAndTotal",
+        data: {
+          DocType: "Dealer",
+          Start: (page - 1) * 25,
+          Limit: 25,
+          Searchv: this.searchInput //快速检索条件
+        }
+      })
+        .then(res => {
+          // console.log(res);
+          //获取数据列表
+          this.tableData = res.List || [];
+          //获取总记录条数
+          this.pageTotal = res.Total;
+        })
+        .finally(() => {
+          this.tableLoading = false;
+        });
     },
     /**
      * 行回调函数
@@ -152,7 +129,7 @@ export default {
      * 双击行信息的时候
      */
     rowDblclick(row, column, event) {
-      this.$refs.distributorModal.show();
+      this.$refs.distributorModal.show(Object.assign({}, row));
     },
     /**
      * 当分页的页码改变的时候
@@ -162,6 +139,12 @@ export default {
       this.tableData = [];
       //获取数据
       this.getData(page);
+    },
+    /**
+     * modal 数据更新
+     */
+    modalUpload() {
+      this.getData();
     }
   }
 };

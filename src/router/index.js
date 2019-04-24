@@ -38,7 +38,7 @@ router.beforeEach((to, from, next) => {
 		return
 	}
 	//检查当前是否存在有用户信息
-	if(JSON.stringify(store.state.loading.userInfo)=="{}"){
+	if(!store.state.user.rsid){
 		//表示当前不存在用户信息，及没有登录，需要跳转到登录页面
 		next('/Loading/index')
 		return
