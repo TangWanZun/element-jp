@@ -30,6 +30,7 @@
         <!-- <el-table-column prop="name" label="精品图片"></el-table-column> -->
         <el-table-column prop="Code" label="集采产品编码" width="150" show-overflow-tooltip></el-table-column>
         <el-table-column prop="Name" label="精品名称" show-overflow-tooltip></el-table-column>
+        <!-- <el-table-column prop="IsAdapAll" label="是否适配全车系" ></el-table-column> -->
         <!-- <el-table-column prop="car" label="适配车型" show-overflow-tooltip></el-table-column> -->
         <!-- <el-table-column prop="phone" label="分类精品数量" width="150"></el-table-column> -->
         <!-- <el-table-column prop="address" label="地址"></el-table-column> -->
@@ -44,7 +45,7 @@
         ></el-pagination>
       </template>
     </card-table>
-    <rightCardModal ref="rightCardModal"></rightCardModal>
+    <rightCardModal ref="rightCardModal" @on-upload="modalUpload"></rightCardModal>
   </div>
 </template>
 
@@ -52,6 +53,7 @@
 import rightCardModal from "./right-card-modal";
 import cardTable from "@/components/card-table";
 import { setTimeout } from "timers";
+import {getJpItem} from "@/api/data"
 export default {
   components: {
     rightCardModal,
@@ -99,18 +101,23 @@ export default {
      */
     getData(page = 1) {
       this.tableLoading = true;
-      this.$request({
-        url: "/DoAction/GetListAndTotal",
-        data: {
-          DocType: "JpItem",
-          Start: (page-1)*25,
-          Limit: 25,
-          p1:this.data.UnionId,
-          Searchv:this.searchInput 
-        }
+      // this.$request({
+      //   url: "/DoAction/GetListAndTotal",
+      //   data: {
+      //     DocType: "JpItem",
+      //     Start: (page-1)*25,
+      //     Limit: 25,
+      //     p1:this.data.UnionId,
+      //     Searchv:this.searchInput 
+      //   }
+      // })
+      getJpItem({
+        page,
+        unionId:this.data.UnionId,
+        searchv:this.searchInput 
       })
         .then(res => {
-          console.log(res);
+          // console.log(res);
           this.tableData = res.List || [];
           this.pageTotal = res.Total || 0;
         })
@@ -145,7 +152,7 @@ export default {
      * 添加行按钮
      */
     addButton() {
-      this.$refs.rightCardModal.show(true,{
+      this.$refs.rightCardModal.show({},{
         //添加当前分类
         _unionCode:this.data.UnionId,
         _unionName:this.data.Name
@@ -163,7 +170,7 @@ export default {
      * 双击行信息的时候
      */
     rowDblclick(row, column, event) {
-      this.$refs.rightCardModal.show();
+      this.$refs.rightCardModal.show({isAdd:false},Object.assign({},row) );
     },
     /**
      * 当分页的页码改变的时候
@@ -173,6 +180,12 @@ export default {
       this.tableData = [];
       //获取数据
       this.getData(page);
+    },
+    /**
+     * modal 数据更新
+     */
+    modalUpload() {
+      this.getData();
     }
   }
 };

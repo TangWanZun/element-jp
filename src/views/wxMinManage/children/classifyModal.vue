@@ -21,16 +21,22 @@
           v-loading="subLoading"
           @selection-change="selectionChange"
         >
-          <el-table-column type="selection" width="30"></el-table-column>
+          <el-table-column type="selection" width="30" :selectable="selectable"></el-table-column>
           <!-- <el-table-column type="index" width="50"></el-table-column> -->
-          <el-table-column :show-overflow-tooltip="true" prop="name" label="集采产品编码" width="130"></el-table-column>
-          <el-table-column :show-overflow-tooltip="true" prop="info" label="精品名称" min-width="180"></el-table-column>
+          <el-table-column :show-overflow-tooltip="true" prop="Code" label="集采产品编码" width="130"></el-table-column>
+          <el-table-column :show-overflow-tooltip="true" prop="Name" label="精品名称" min-width="180"></el-table-column>
+          <el-table-column
+            :show-overflow-tooltip="true"
+            prop="_isAdd"
+            label="是否已添加"
+            min-width="180"
+          ></el-table-column>
         </el-table>
       </div>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="addItem" style="float:left">新增精品</el-button>
+        <!-- <el-button @click="addItem" style="float:left">新增精品</el-button> -->
+        <el-button type="primary" @click="submit" :loading="subLoading">添 加</el-button>
         <el-button @click="close">取 消</el-button>
-        <el-button type="primary" @click="close" :loading="subLoading">添 加</el-button>
       </span>
     </el-dialog>
     <!-- 展示大图 -->
@@ -39,7 +45,9 @@
 </template>
 
 <script>
-import rightCardModal from './boutique/components/right-card-modal.vue'
+import rightCardModal from "./boutique/components/right-card-modal.vue";
+import { getJpItem } from "@/api/data";
+
 export default {
   name: "classifyModal",
   components: {
@@ -71,7 +79,9 @@ export default {
       tabsValue: "tabs-1",
       tableData: [],
       //条目编辑选择的行信息
-      selectionLine: []
+      selectionLine: [],
+      //外面传递进来的数据
+      parentData: {}
     };
   },
   computed: {
@@ -92,24 +102,50 @@ export default {
      * 显示
      * 系统页面初始化
      */
-    show(data) {
+    show({} = {}, data) {
+      console.log(data);
       this.meValue = true;
+      //保存数据
+      this.parentData = data;
+      //获取精品
+      this.getJpList();
+    },
+    /**
+     * 获取精品的列表
+     */
+    getJpList(page = 1) {
       //需要传入数据的时候
       this.subLoading = true;
-      setTimeout(() => {
-        //获取条目编辑的信息
-        this.tableData = [
-          {
-            name: "品牌(ANZ)",
-            info: "安之享"
-          },
-          {
-            name: "编码采集",
-            info: "JC-BB-AAS03-DNVJ"
+      getJpItem({
+        page,
+        unionId: this.parentData.ContextUnionId,
+        searchv: ""
+      })
+        .then(res => {
+          //获取当前分类已经选择的数据
+          let list = this.parentData.List;
+          //这里添加是否添加的标识
+          for (let j = 0; j < res.List.length; j++) {
+            res.List[j]._isAdd = "-";
+            for (let i = 0; i < list.length; i++) {
+              if (list[i].UnionId == res.List[j].UnionId) {
+                //存在   则打上标记
+                res.List[j]._isAdd = "✔";
+                break;
+              }
+            }
           }
-        ];
-        this.subLoading = false;
-      }, 500);
+          this.tableData = res.List || [];
+        })
+        .finally(() => {
+          this.subLoading = false;
+        });
+    },
+    /**
+     * 判断当前精品是否可以点击
+     */
+    selectable(row){
+      return row._isAdd=='-';
     },
     /**
      * 页面关闭|
@@ -117,6 +153,14 @@ export default {
     close() {
       //数据初始化
       Object.assign(this.$data, this.$options.data());
+    },
+    /**
+     * 点击添加按钮
+     */
+    submit(){
+      // console.log(this.selectionLine);
+      this.$emit('on-upload',this.selectionLine);
+      this.close();
     },
     /**
      * 行回调函数
@@ -133,12 +177,12 @@ export default {
     /**
      * 新增精品
      */
-    addItem(){
+    addItem() {
       //这里需要注意，当在此页面添加一个新的精品的时候，精品
       //上的适配车型将自动添加本页面展示的车型
-      this.$refs.rightCardModal.show();
-      
-    }
+      this.$refs.rightCardModal.show({});
+    },
+
   }
 };
 </script>

@@ -4,7 +4,7 @@
     <el-dialog
       title="编辑"
       :visible.sync="meValue"
-      width="600px"
+      width="620px"
       custom-class="classifyModal-dialog-class"
       :show-close="false"
       :close-on-click-modal="false"
@@ -19,29 +19,34 @@
                 <el-select v-model="form.DocJson.ItemGroup" clearable placeholder="请选择">
                   <el-option
                     v-for="item in baseSelectOptions"
-                    :key="item.UnionGuid"
+                    :key="item.UnionId"
                     :label="item.Name"
-                    :value="item.UnionGuid"
+                    :value="item.UnionId"
                   ></el-option>
                 </el-select>
               </el-form-item>
               <el-form-item label="精品图片">
                 <uploadImg :imgUrl="form.DocJson.ImgUrl" @on-upload="form.DocJson.ImgUrl=$emite"></uploadImg>
               </el-form-item>
-              <el-form-item label="精品名称">
-                <el-input v-model="form.DocJson.Name"></el-input>
-              </el-form-item>
+              <div class="itemFlex">
+                <el-form-item label="集采编码">
+                  <el-input v-model="form.DocJson.Code"></el-input>
+                </el-form-item>
+                <el-form-item label="精品名称">
+                  <el-input v-model="form.DocJson.Name"></el-input>
+                </el-form-item>
+              </div>
             </el-form>
           </el-tab-pane>
           <!-- 条目编辑 -->
           <el-tab-pane label="条目编辑" name="tabs-2">
-            <div v-loading="tableLoading">
+            <div v-loading="subLoading" id="page-dorw">
               <el-button size="mini" type="primary" @click="addButton">增加行</el-button>
               <el-button size="mini" type="danger" :disabled="delDisabled" @click="delButton">删除行</el-button>
               <el-table
                 :row-class-name="rowClassName"
                 :data="form.DocJson.List1"
-                row-key="_index"
+                row-key="LineId"
                 stripe
                 style="width: 100%"
                 height="220"
@@ -55,7 +60,7 @@
                 </el-table-column>
                 <el-table-column
                   :show-overflow-tooltip="true"
-                  prop="value"
+                  prop="Value"
                   label="条目详情"
                   min-width="180"
                 >
@@ -66,7 +71,7 @@
           </el-tab-pane>
           <!-- 适配车型 -->
           <el-tab-pane label="适配车型" name="tabs-3">
-            <div v-loading="table2Loading">
+            <div v-loading="subLoading">
               <el-select
                 size="mini"
                 style="margin-right:10px"
@@ -76,19 +81,19 @@
                 placeholder="请选择"
               >
                 <el-option
-                  v-for="item in table2SelectOptions"
-                  :key="item.index"
-                  :label="item.itemName"
-                  :value="item.index"
+                  v-for="(item,key) in carSerSelectOptions"
+                  :key="key"
+                  :label="item.Name"
+                  :value="key"
                 ></el-option>
               </el-select>
               <el-button size="mini" type="primary" @click="addButton2">增加行</el-button>
               <el-button size="mini" type="primary" @click="addCarType">新增车型</el-button>
               <el-button size="mini" type="danger" :disabled="delDisabled2" @click="delButton2">删除行</el-button>
+              <el-switch style="margin-left:10px" v-model="form.DocJson.IsAdapAll" active-text="适配全车系" inactive-text=""></el-switch>
               <el-table
                 :row-class-name="rowClassName"
-                :data="table2Data"
-                row-key="_index"
+                :data="form.DocJson.List2"
                 stripe
                 style="width: 100%"
                 height="220"
@@ -97,13 +102,8 @@
               >
                 <el-table-column type="selection" width="30"></el-table-column>
                 <!-- <el-table-column type="index" width="50"></el-table-column> -->
-                <el-table-column
-                  :show-overflow-tooltip="true"
-                  prop="itemCode"
-                  label="车型编码"
-                  width="130"
-                ></el-table-column>
-                <el-table-column :show-overflow-tooltip="true" prop="itemName" label="车型名称"></el-table-column>
+                <el-table-column :show-overflow-tooltip="true" width="100" prop="Name" label="车型名称"></el-table-column>
+                <el-table-column :show-overflow-tooltip="true" prop="UnionId" label="车型编码"></el-table-column>
               </el-table>
             </div>
           </el-tab-pane>
@@ -139,18 +139,14 @@ export default {
       addItemShow: false,
       //保存按钮loading
       subLoading: false,
-      //条目编辑表loading
-      tableLoading: false,
-      //适配车型表loading
-      table2Loading: false,
       //是否为新增数据
       isAddData: true,
-      //精品分类信息
-      baseSelectOptions: [
-        {
-
-        }
-      ],
+      //精品分类下拉框
+      baseSelectOptions: [],
+      //车型下拉框
+      carSerSelectOptions: [],
+      //从外面传递进来的数据
+      data: {},
       //表单数据
       form: {
         DocType: "JpItem",
@@ -158,6 +154,7 @@ export default {
         UnionGuid: "",
         UnionGuidTemp: "",
         DocJson: {
+          Code: "", //集采编码 
           //标题信息
           Name: "",
           ImgUrl: "",
@@ -175,12 +172,8 @@ export default {
       selectionLine: [],
       //适配车i选哪个选择的行信息
       selectionLine2: [],
-      //适配车型的表格
-      table2Data: [],
       //适配车型的选择框
-      table2Select: "",
-      //适配 车型选择的内容
-      table2SelectOptions: []
+      table2Select: []
     };
   },
   created() {
@@ -209,7 +202,9 @@ export default {
      * 显示
      * 系统页面初始化
      */
-    show(isAdd, data) {
+    show({
+      isAdd=true
+      }={}, data={}) {
       this.meValue = true;
       //启动保存按钮loading
       this.subLoading = true;
@@ -217,8 +212,10 @@ export default {
       this.$nextTick(function() {
         this.rowDrop();
       });
-      //获取精品分类信息
+      //获取精品分类信息下拉框
       this.getItemGroup();
+      //获取车系下拉框
+      this.getCarSerSel();
       if (isAdd) {
         //当前为新增数据
         this.isAddData = true;
@@ -226,9 +223,13 @@ export default {
         this.form.DocJson.ItemGroup = data._unionCode;
       } else {
         this.isAddData = false;
+        this.data = data;
+        this.form.DocJson = Object.assign(this.form.DocJson, data);
         //获取数据
         Promise.all([this.getData1(), this.getData2()]).then(res => {
-          console.log(123,res);
+          // console.log(res);
+          this.form.DocJson.List1 = res[0].List || [];
+          this.form.DocJson.List2 = res[1].List || [];
           this.subLoading = false;
         });
       }
@@ -248,6 +249,20 @@ export default {
       });
     },
     /**
+     * 获取车系下拉框
+     */
+    getCarSerSel() {
+      this.$request({
+        url: "/DoAction/GetSingleList",
+        data: {
+          DocType: "JpItem",
+          ActionType: "CarSerSel"
+        }
+      }).then(res => {
+        this.carSerSelectOptions = res.List || [];
+      });
+    },
+    /**
      * 获取条目编辑信息
      */
     getData1() {
@@ -255,8 +270,8 @@ export default {
         url: "/DoAction/GetSingleList",
         data: {
           DocType: "JpItem",
-          ActionType: "JpItem2",
-          DocId: "" //精品项目主键
+          ActionType: "JpItem1",
+          DocId: this.data.UnionId //精品项目主键
         }
       });
       // return new Promise((resolve, reject) => {
@@ -287,7 +302,7 @@ export default {
         data: {
           DocType: "JpItem",
           ActionType: "JpItem2",
-          DocId: "" //精品项目主键
+          DocId: this.data.UnionId //精品项目主键
         }
       });
       return new Promise((resolve, reject) => {
@@ -295,9 +310,9 @@ export default {
         setTimeout(() => {
           //获取适配车型的信息
           for (let i = 0; i < 3; i++) {
-            this.table2Data.push({
-              itemCode: "A0" + (i + 1),
-              itemName: "A系车"
+            this.form.DocJson.List2.push({
+              UnionId: "A0" + (i + 1),
+              Name: "A系车"
             });
           }
           this.table2Loading = false;
@@ -315,19 +330,30 @@ export default {
     /**
      * 数据保存
      */
-    submit(){
+    submit() {
+      this.subLoading = true;
       let guid = uuidv1();
       this.form.UnionGuidTemp = guid;
-      if(this.isAddData){
+      if (this.isAddData) {
         //新增
         this.form.UnionGuid = guid;
-      }else{
-        //修改
-
+      } else {
+        this.form.UnionGuid = this.data.UnionGuid;
+        this.form.DocId = this.data.UnionId;
       }
-      console.log(this.form)
+      // console.log(this.form);
+      this.$request({
+        url: "/DoAction/Submit",
+        data: this.form
+      })
+        .then(res => {
+          this.$emit("on-upload", res);
+          this.close();
+        })
+        .finally(() => {
+          this.subLoading = false;
+        });
     },
-    cardAddBu() {},
     /**
      * 行回调函数
      */
@@ -363,16 +389,18 @@ export default {
       // console.log(this.table2Select);
       //将数据添加到表中
       let arr = this.table2Select;
+      let list = this.form.DocJson.List2;
       for (let i = 0; i < arr.length; i++) {
-        let item = this.table2SelectOptions[arr[i]];
+        let item = this.carSerSelectOptions[arr[i]];
         //这里需要进行数据去重
         let isCf = false;
-        for (let j = 0; j < this.table2Data.length; j++) {
-          if (this.table2Data[j].itemCode == item.itemCode) {
+        for (let j = 0; j < list.length; j++) {
+          if (list[j].UnionId == item.UnionId) {
             isCf = true;
+            break;
           }
         }
-        if (!isCf) this.table2Data.push(item);
+        if (!isCf) list.push(item);
       }
       //清空增加行
       this.table2Select = [];
@@ -388,7 +416,7 @@ export default {
      */
     delButton() {
       for (let i = this.selectionLine.length - 1; i >= 0; i--) {
-        this.form.DocJson.List1.splice(this.selectionLine[i]._index, 1);
+        this.form.DocJson.List1.splice(this.selectionLine[i].LineId, 1);
       }
     },
     /**
@@ -396,12 +424,14 @@ export default {
      */
     delButton2() {
       for (let i = this.selectionLine2.length - 1; i >= 0; i--) {
-        this.table2Data.splice(this.selectionLine2[i]._index, 1);
+        this.form.DocJson.List2.splice(this.selectionLine2[i].LineId, 1);
       }
     },
     //行拖拽
     rowDrop() {
-      const tbody = document.querySelector(".el-table__body-wrapper tbody");
+      const tbody = document.querySelector(
+        "#page-dorw .el-table__body-wrapper tbody"
+      );
       const _this = this;
       Sortable.create(tbody, {
         onEnd({ newIndex, oldIndex }) {
@@ -428,6 +458,10 @@ export default {
 </style>
 
 <style lang="less" scoped>
+.itemFlex {
+  display: flex;
+  justify-content: space-between;
+}
 //隐藏上传按钮
 .none-upload .el-upload--picture-card {
   display: none;
@@ -435,37 +469,6 @@ export default {
 //精品主要版面
 .dialog-body {
   width: 100%;
-  height: 300px;
-}
-// // 精品详情
-// .dialog-body {
-//   display: flex;
-//   justify-content: flex-start;
-//   .dialog-body-left {
-//     width: 180px;
-//     flex-shrink: 0;
-//   }
-//   .dialog-body-right {
-//     padding-left: 10px;
-//     flex-grow: 1;
-//     border-left: 1px solid rgba(0, 0, 0, 0.08);
-//   }
-// }
-// 条目列表
-.item-list {
-  margin-top: 10px;
-  height: 200px;
-  overflow: auto;
-  .item {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-    .item-title {
-      &::before {
-        content: "【";
-      }
-      &::after {
-        content: "】";
-      }
-    }
-  }
+  height: 310px;
 }
 </style>

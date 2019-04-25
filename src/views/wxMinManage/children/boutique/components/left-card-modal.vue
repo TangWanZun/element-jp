@@ -74,7 +74,11 @@ export default {
         data: this.form
       })
         .then((res)=>{
-          this.$emit('on-upload',res)
+          this.$emit('on-upload',{
+            DocId:res.DocId,
+            Name:this.form.DocJson.Name,
+            UnionGuid:this.form.UnionGuid
+          })
           this. close();
         })
     },

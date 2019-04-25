@@ -13,16 +13,16 @@
       <div class="dialog-body">
         <el-form label-position="left" ref="form" :model="form" label-width="80px" size="mini">
           <el-form-item label="车型图片">
-			  <uploadImg></uploadImg>
+            <uploadImg :imgUrl="form.DocJson.ImgUrl" @on-upload="form.DocJson.ImgUrl=$emite"></uploadImg>
           </el-form-item>
           <el-form-item label="车型名称">
-            <el-input v-model="form.name"></el-input>
+            <el-input v-model="form.DocJson.Name"></el-input>
           </el-form-item>
         </el-form>
       </div>
       <span slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submit" :loading="subLoading">保 存</el-button>
         <el-button @click="close">取 消</el-button>
-        <el-button type="primary" @click="close">保 存</el-button>
       </span>
     </el-dialog>
   </div>
@@ -31,20 +31,31 @@
 <script>
 import { setTimeout } from "timers";
 import Sortable from "sortablejs";
-import uploadImg from "@/components/upload-img"
+import uploadImg from "@/components/upload-img";
+import uuidv1 from "uuid/v1";
 export default {
   name: "classifyModal",
   components: {
-	  uploadImg
+    uploadImg
   },
   props: {},
   data() {
     return {
       meValue: false,
-      //大图图片
+      //是否为添加数据状态
+      addState:true,
+      //登录按钮loading
+      subLoading:false,
+      //数据
       form: {
-		name: "",
-		imgUrl:""
+        DocType: "CarSer",
+        ActionType: "AddOrUpdate",
+        UnionGuid: "",
+        UnionGuidTemp: "",
+        DocJson: {
+          Name: "",
+          ImgUrl: ""
+        }
       }
     };
   },
@@ -55,6 +66,16 @@ export default {
      */
     show(data) {
       this.meValue = true;
+      if(!data){
+        //添加状态
+        this.addState = true;
+      }else{
+        //修改状态
+        this.addState = false;
+        this.form.DocJson = data;
+        this.form.UnionGuid = data.UnionGuid;
+        this.form.DocId = data.UnionId;
+      }
     },
     /**
      * 页面关闭
@@ -64,12 +85,28 @@ export default {
       Object.assign(this.$data, this.$options.data());
     },
     /**
-     * 查看大图
+     * 保存按钮
      */
-    handlePictureCardPreview(file) {
-      this.formData.imgUrl = file.url;
-      this.dialogVisible = true;
-    }
+    submit(){
+      this.subLoading = true;
+      let guid = uuidv1();
+      this.form.UnionGuidTemp = guid;
+      if(this.addState){
+        //添加状态
+        this.form.UnionGuid = guid;
+      }
+      this.$request({
+        url:'/DoAction/Submit',
+        data:this.form
+      })
+        .then((res)=>{
+          this.$emit('on-upload',res)
+          this.close();
+        })
+        .finally(()=>{
+          this.subLoading = false
+        })
+    },
   }
 };
 </script>

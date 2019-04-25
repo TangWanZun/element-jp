@@ -2,9 +2,16 @@
   <div>
     <div class="body">
       <div class="body-header">
-        <el-button @click="upPage" type="primary" icon="el-icon-arrow-left" style="margin-right:10px" size="small">上一页</el-button>
-        A系车
-        </div>
+        <el-button
+          @click="upPage"
+          type="primary"
+          icon="el-icon-arrow-left"
+          style="margin-right:10px"
+          size="small"
+        >上一页</el-button>
+        {{parentData.Name}}
+        <el-button @click="dataSubmit" type="primary" style="float:right" size="small">保存修改</el-button>
+      </div>
       <div class="body-content" v-loading="contentLoading">
         <div
           shadow="hover"
@@ -15,7 +22,7 @@
         >
           <!-- 头部 -->
           <div class="box-card-header">
-            <span>{{item.name}}</span>
+            <span>{{item.Name}}</span>
             <div style="float: right;">
               <el-dropdown @command="dropdownCommand">
                 <span class="el-dropdown-link">
@@ -34,16 +41,15 @@
           <!-- 内容 -->
           <div class="box-card-content">
             <el-card
-              v-for="(cardItem,cardIndex) in item.list"
+              v-for="(cardItem,cardIndex) in item.List"
               :key="cardIndex"
               class="card-item"
               :body-style="{padding:'0px'}"
               shadow="never"
-              @click.native="cardAddButton"
             >
               <div class="card-item-in">
-                <img :src="cardItem.img" alt srcset>
-                <div>{{cardItem.name}}</div>
+                <img :src="imgUrl+cardItem.ImgUrl" alt srcset>
+                <div>{{cardItem.Name}}</div>
                 <!-- 删除按钮 -->
                 <div class="card-item-del" @click.stop="delItemButton(key,cardIndex)">
                   <i class="el-icon-delete"></i>
@@ -52,8 +58,8 @@
             </el-card>
             <div
               class="card-add-bu"
-              :class="{'card-add-bu-absolute': item.list.length>3}"
-              @click="cardAddButton"
+              :class="{'card-add-bu-absolute': item.List.length>3}"
+              @click="cardAddButton(key)"
             >
               <i class="el-icon-circle-plus-outline"></i>
               添加精品
@@ -64,66 +70,67 @@
           <div class="box-card-add-text" v-if="!isAddText" @click="isAddText=true">新建精品分类</div>
           <div v-else>
             <div>
-              <el-select v-model="classifyName" placeholder="请选择">
+              <el-select v-model="classifyIndex" placeholder="请选择">
                 <el-option
-                  v-for="item in classOptions"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.label"
+                  v-for="(item,key) in classOptions"
+                  :key="key"
+                  :label="item.Name"
+                  :value="key"
                 ></el-option>
               </el-select>
-              <!-- <el-input v-model="classifyName" placeholder="请输入精品分类名称"></el-input> -->
             </div>
             <div class="box-card-add-footer">
               <el-button style="padding:8px 15px" type="text" @click="isAddText=false">取消</el-button>
-              <el-button style="padding:8px 15px" type="primary" @click="classifySend">保存</el-button>
+              <el-button style="padding:8px 15px;float:left" @click="addSingin">新建</el-button>
+              <el-button style="padding:8px 15px" type="primary" @click="classifySend()">保存</el-button>
             </div>
           </div>
         </el-card>
       </div>
     </div>
-    <classifyModal ref="classifyModal"></classifyModal>
+    <!-- 新增精品 -->
+    <classifyModal ref="classifyModal" @on-upload="classifyModalOnUpload"></classifyModal>
+    <!-- 新增精品分类 -->
+    <leftCardModal ref="leftCardModal" @on-upload="leftCardModalOnUpload"></leftCardModal>
   </div>
 </template>
 
 <script>
 import classifyModal from "./classifyModal";
+import leftCardModal from "./boutique/components/left-card-modal";
 import { setTimeout } from "timers";
+import { IMG_URL } from "@/config";
+import { getItemGroup } from "@/api/data";
+import { arrUnique } from "@/library/util";
+
 export default {
   name: "classify",
   components: {
-    classifyModal
+    classifyModal,
+    leftCardModal
   },
   data() {
     return {
+      imgUrl: IMG_URL,
       //页面加载
       contentLoading: true,
       //新建精品是否启动
       isAddText: false,
       //获取精品分类
       dataList: [],
-      //添加的精品分类名称
-      classifyName: "",
+      //添加的精品分类code
+      classifyIndex: "",
       //添加精品分类
-      classOptions: [{
-          value: '选项1',
-          label: '黄金糕'
-        }, {
-          value: '选项2',
-          label: '双皮奶'
-        }, {
-          value: '选项3',
-          label: '蚵仔煎'
-        }, {
-          value: '选项4',
-          label: '龙须面'
-        }, {
-          value: '选项5',
-          label: '北京烤鸭'
-        }],
+      classOptions: [],
+      //由父组件传递过来的数据
+      parentData: this.$store.state.page.classifyCache,
+      //当前添加的精品分类索引值
+      singInIndex: -1
     };
   },
   created() {
+    // console.log(this.parentData);
+
     //数据拉取
     this.getData();
   },
@@ -132,47 +139,101 @@ export default {
      * 获取数据
      */
     getData() {
-      let list = [];
-      for (let i = 0; i < 8; i++) {
-        list.push({
-          name: "奔驰专车专用隐藏式记录仪",
-          img:
-            "https://ossweb-img.qq.com/images/lol/web201310/skin/big10001.jpg"
-        });
-      }
-      //虚拟数据
-      this.dataList = [
-        {
-          id: 1,
-          name: "记录仪",
-          list: list
-        },
-        {
-          id: 2,
-          name: "喇叭",
-          list: list.slice(0, 3)
-        },
-        {
-          id: 3,
-          name: "座椅",
-          list: []
+      this.contentLoading = true;
+      this.$request({
+        url: "/DoAction/GetMainSubList",
+        data: {
+          DocType: "CarSer",
+          ActionType: "JpItemGroup",
+          DocId: this.parentData.UnionId //车系主键
         }
-      ];
-      setTimeout(() => {
-        this.contentLoading = false;
-      }, 500);
+      })
+        .then(res => {
+          console.log(res);
+          this.dataList = res || [];
+          //获取精品分类
+          this.meGetItemGroup();
+        })
+        .finally(() => {
+          this.contentLoading = false;
+        });
+    },
+    /**
+     * 获取精品分类信息
+     */
+    meGetItemGroup() {
+      //获取精品分类信息
+      getItemGroup().then(res => {
+        //这里需要进行去重
+        this.classOptions =
+          arrUnique(res.List, this.dataList, "UnionId", "ContextUnionId") || [];
+      });
     },
     /**
      * 返回上一页
      */
-    upPage(){
-      this.$router.go(-1)
+    upPage() {
+      this.$router.go(-1);
+    },
+    /**
+     * 新建精品分类
+     */
+    addSingin() {
+      this.$refs.leftCardModal.show();
+    },
+    /**
+     * 新建精品分类成功回调
+     */
+    leftCardModalOnUpload(res) {
+      console.log(res);
+      //自动赋值
+      this.classifySend({
+        UnionId: res.DocId,
+        Name: res.Name,
+        UnionGuid: res.UnionGuid
+      });
+    },
+    /**
+     * 新增精品分类保存按钮
+     */
+    classifySend(data) {
+      let item = data || this.classOptions[this.classifyIndex];
+      console.log(item);
+      //添加新的精品分类
+      this.dataList.push({
+        ItemGroup: item.UnionGuid,
+        ContextUnionId: item.UnionId,
+        Name: item.Name,
+        List: []
+      });
+      this.$message({
+        message: "分类添加成功",
+        type: "success"
+      });
+      //input框清空
+      this.classifyIndex = "";
+      //新增分类关闭
+      this.isAddText = false;
+      //并且刷新精品分类
+      this.meGetItemGroup();
     },
     /**
      * 添加精品
      */
-    cardAddButton() {
-      this.$refs.classifyModal.show();
+    cardAddButton(key) {
+      this.singInIndex = key;
+      this.$refs.classifyModal.show({}, Object.assign({}, this.dataList[key]));
+    },
+    /**
+     * 添加精品回调
+     */
+    classifyModalOnUpload(res) {
+      console.log(res);
+      let arr = [];
+      this.dataList[this.singInIndex].List = arr.concat(
+        this.dataList[this.singInIndex].List,
+        res
+      );
     },
     /**
      * 点击更多项
@@ -207,52 +268,38 @@ export default {
      * 删除精品
      */
     delItemButton(classKey, index) {
-      this.$confirm("此操作将永久删除该精品信息, 是否继续?", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning"
-      })
-        .then(() => {
-          this.dataList[classKey].list.splice(index, 1);
-          this.$message({
-            type: "success",
-            message: "删除成功!"
-          });
-        })
-        .catch(() => {
-          this.$message({
-            type: "info",
-            message: "已取消删除"
-          });
-        });
+      this.dataList[classKey].List.splice(index, 1);
+      // this.$confirm("此操作将永久删除该精品信息, 是否继续?", "提示", {
+      //   confirmButtonText: "确定",
+      //   cancelButtonText: "取消",
+      //   type: "warning"
+      // })
+      //   .then(() => {
+      //     this.dataList[classKey].List.splice(index, 1);
+      //     this.$message({
+      //       type: "success",
+      //       message: "删除成功!"
+      //     });
+      //   })
+      //   .catch(() => {
+      //     this.$message({
+      //       type: "info",
+      //       message: "已取消删除"
+      //     });
+      //   });
     },
     /**
-     * 新增精品保存按钮
+     * 保存修改信息
      */
-    classifySend() {
-      //当输入名称为空时
-      if (!this.classifyName.trim()) {
-        this.$message({
-          message: "请输入名称",
-          type: "warning"
-        });
-        return;
-      }
-      this.dataList.push({
-        id: this.dataList.length,
-        name: this.classifyName,
-        list: []
-      });
+    dataSubmit() {
+      // this.$request({
+      //   url:''
+      // })
       this.$message({
-        message: "分类添加成功",
-        type: "success"
+        type: "success",
+        message: "保存成功!"
       });
-      //input框清空
-      this.classifyName = "";
-      //新增分类关闭
-      this.isAddText = false;
-    },
-
+    }
   }
 };
 </script>
@@ -268,10 +315,12 @@ export default {
     background-color: #f5f5f5;
     border-bottom: 1px solid #d9d9d9;
     height: 50px;
-    display: flex;
-    align-items: center;
+    // display: flex;
+    // align-items: center;
     font-size: 18px;
     padding-left: 20px;
+    padding-top: 8px;
+    padding-right: 15px;
     flex-shrink: 0;
   }
   .body-content {
@@ -339,7 +388,12 @@ export default {
           }
           .card-item-in {
             img {
+              display: block;
               width: 100%;
+              height: 100px;
+              background-color: rgba(0, 0, 0, 0.2);
+              object-position: center;
+              object-fit: contain;
             }
             > div {
               font-size: 15px;

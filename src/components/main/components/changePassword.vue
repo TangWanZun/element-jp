@@ -11,21 +11,21 @@
       @close="close"
     >
       <div class="dialog-body">
-        <el-form label-width="80px">
+        <el-form label-width="80px" hide-required-asterisk>
           <el-form-item label="原始密码">
-            <el-input v-model="form.name" size="small" show-password></el-input>
+            <el-input v-model="form.oldPsw" size="small" show-password></el-input>
           </el-form-item>
           <el-form-item label="新的密码">
-            <el-input v-model="form.name" size="small" show-password></el-input>
+            <el-input v-model="form.newPsw1" size="small" show-password></el-input>
           </el-form-item>
           <el-form-item label="确定密码">
-            <el-input v-model="form.name" size="small" show-password></el-input>
+            <el-input v-model="form.newPsw2" size="small" show-password></el-input>
           </el-form-item>
         </el-form>
       </div>
       <span slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submit" :loading="subLoading">保 存</el-button>
         <el-button @click="close">取 消</el-button>
-        <el-button type="primary" @click="close" :loading="subLoading">保 存</el-button>
       </span>
     </el-dialog>
   </div>
@@ -46,7 +46,9 @@ export default {
       meValue: false,
       subLoading: false,
       form: {
-        name: ""
+        oldPsw: "",
+        newPsw1: "",
+        newPsw2: ""
       }
     };
   },
@@ -58,22 +60,6 @@ export default {
      */
     show(data) {
       this.meValue = true;
-      //需要传入数据的时候
-      //   this.subLoading = true;
-      //   setTimeout(() => {
-      //     //获取条目编辑的信息
-      //     this.tableData = [
-      //       {
-      //         name: "品牌(ANZ)",
-      //         info: "安之享"
-      //       },
-      //       {
-      //         name: "编码采集",
-      //         info: "JC-BB-AAS03-DNVJ"
-      //       }
-      //     ];
-      //     this.subLoading = false;
-      //   }, 3000);
     },
     /**
      * 页面关闭
@@ -81,6 +67,34 @@ export default {
     close() {
       //数据初始化
       Object.assign(this.$data, this.$options.data());
+    },
+    /**
+     * 提交数据
+     */
+    submit() {
+      this.subLoading = true;
+      if (this.form.newPsw1 !== this.form.newPsw2) {
+        this.$message.error("新的密码与确认密码不一致");
+        return;
+      }
+      this.$request({
+        url: "/Login/ModifyPsw",
+        data: {
+          oldPsw: this.form.oldPsw,
+          newPsw: this.form.newPsw2
+        }
+      }).then(res => {
+        this.$notify({
+          title: '成功',
+          message: '密码修改成功，请重新登录',
+          type: 'success'
+        });
+        //这里执行退出登录操作
+        this.$store.dispatch('user/userLoginOut');
+      })
+      .finally(()=>{
+        this.subLoading = false;
+      })
     }
   }
 };

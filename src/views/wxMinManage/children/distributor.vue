@@ -46,6 +46,7 @@
 import distributorModal from "./distributorModal";
 import cardTable from "@/components/card-table";
 import { setTimeout } from "timers";
+import {delData} from '@/api/public'
 export default {
   components: {
     distributorModal,
@@ -121,9 +122,17 @@ export default {
      * 删除行按钮
      */
     delButton() {
-      for (let i = this.selectionLine.length - 1; i >= 0; i--) {
-        this.tableData.splice(this.selectionLine[i]._index, 1);
-      }
+      // for (let i = this.selectionLine.length - 1; i >= 0; i--) {
+      //   this.tableData.splice(this.selectionLine[i]._index, 1);
+      // }
+      // console.log(this.selectionLine)
+      delData({
+        docType:'Dealer',
+        list:this.selectionLine
+      })
+        .then((res)=>{
+          this.getData();
+        })
     },
     /**
      * 双击行信息的时候

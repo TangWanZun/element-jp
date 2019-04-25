@@ -1,4 +1,5 @@
 import { login } from '@/api/user'
+import {ROOT_URL} from '@/config'
 
 export default {
 	namespaced: true,
@@ -26,6 +27,13 @@ export default {
 						resolve()
 					})
 			})
+		},
+		/**
+		 * 退出登录
+		 */
+		userLoginOut({commit}){
+			commit('setRsid','');
+			window.location.href = `${ROOT_URL}/Login/LoginOut`;
 		}
 	}
 }

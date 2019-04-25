@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="body">
-      <el-card>
+      <el-card v-loading="loading">
         <div slot="header" class="clearfix">
           <el-button
             icon="el-icon-plus"
@@ -15,30 +15,32 @@
             :body-style="{padding:'0px',height: '150px'}"
             class="item"
             shadow="hover"
-            v-for="item in 7"
-            :key="item"
+            v-for="(item,key) in formData"
+            :key="item.UnionId"
           >
-            <div class="item-box" :style="{'backgroundImage':'url('+itemBg+')'}">
-              <div class="item-header" @click="push">
-                <div>A系</div>
+            <div class="item-box" :style="{'backgroundImage':'url('+imgUrl+item.ImgUrl+')'}">
+              <div class="item-header" @click="push(key)">
+                <div>{{item.Name}}</div>
                 <i class="el-icon-arrow-right"></i>
               </div>
               <div class="item-setup">
                 <i class="el-icon-delete" @click.stop="deleteBtn" style="margin-right:10px"></i>
-                <i class="el-icon-setting" @click.stop="cartypeModalShow"></i>
+                <i class="el-icon-setting" @click.stop="cartypeModalSetting(key)"></i>
               </div>
             </div>
           </el-card>
         </div>
+        <el-pagination background layout="prev, pager, next,jumper" :total="pageTotal"></el-pagination>
       </el-card>
     </div>
     <!-- 设置与添加车型 -->
-    <cartypeModal ref="cartypeModalRef"></cartypeModal>
+    <cartypeModal ref="cartypeModalRef" @on-upload="modalOnUpload"></cartypeModal>
   </div>
 </template>
 
 <script>
 import cartypeModal from "./cartypeModal";
+import { IMG_URL } from "@/config";
 export default {
   name: "cartype",
   components: {
@@ -46,16 +48,49 @@ export default {
   },
   data() {
     return {
+      imgUrl: IMG_URL,
       itemBg: require("@/assets/fz/Axc.jpg"),
-      //是否显示车型样式
-      dialogVisible: false
+      //数据
+      formData: [],
+      //数据个数
+      pageTotal: 0,
+      //
+      loading: true
     };
+  },
+  created() {
+    this.getData();
   },
   methods: {
     /**
+     * 获取数据
+     */
+    getData(page = 1) {
+      this.loading = true;
+      this.$request({
+        url: "/DoAction/GetListAndTotal",
+        data: {
+          DocType: "CarSer",
+          Start: (page - 1) * 25,
+          Limit: 25,
+          Searchv: "" //快速检索条件
+        }
+      })
+        .then(res => {
+          console.log(res);
+          this.formData = res.List || [];
+          this.pageTotal = res.Total || 0;
+        })
+        .finally(() => {
+          this.loading = false;
+        });
+    },
+    /**
      * 点击传递
      */
-    push() {
+    push(key) {
+      //缓存数据
+      this.$store.commit('page/setClassifyCache',this.formData[key]);
       this.$router.push("/wxMinManage/classify");
     },
     /**
@@ -63,6 +98,12 @@ export default {
      */
     cartypeModalShow() {
       this.$refs.cartypeModalRef.show();
+    },
+    /**
+     * 车型修改
+     */
+    cartypeModalSetting(key){
+      this.$refs.cartypeModalRef.show(Object.assign({},this.formData[key]));
     },
     /**
      * 删除车型
@@ -85,6 +126,12 @@ export default {
             message: "已取消删除"
           });
         });
+    },
+    /**
+     * 弹框数据更新
+     */
+    modalOnUpload(){
+      this.getData();
     }
   }
 };
@@ -97,11 +144,13 @@ export default {
 .list {
   display: flex;
   flex-wrap: wrap;
+  margin-right: -15px;
 }
 .item {
   width: 300px;
   margin-right: 15px;
   margin-bottom: 15px;
+  background-color: rgba(0, 0, 0, 0.2);
   .item-box {
     width: 100%;
     height: 100%;

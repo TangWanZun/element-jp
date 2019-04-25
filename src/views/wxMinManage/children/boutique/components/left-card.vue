@@ -50,6 +50,7 @@
 import leftCardModal from "./left-card-modal";
 import cardTable from "@/components/card-table";
 import { setTimeout } from "timers";
+import {getItemGroup} from "@/api/data"
 export default {
   components: {
     leftCardModal,
@@ -70,7 +71,7 @@ export default {
       //搜索
       searchInput: "",
       //全部数据
-      pageTotal:0
+      // pageTotal:0
     };
   },
   computed: {
@@ -88,15 +89,12 @@ export default {
      */
     getData(page = 0) {
       this.tableLoading = true;
-      this.$request({
-        url: "/DoAction/GetSingleList",
-        data: {
-          DocType: "ItemGroup",
-        }
-      })
+      this.tableData.length=1;
+      getItemGroup()
       .then((res)=>{
         this.tableData =this.tableData.concat(res.List||[]);
-        this.pageTotal = res.Total||0;
+        this.$emit('on-upload',res)
+        // this.pageTotal = res.Total||0;
       })
       .finally(()=>{
         this.tableLoading = false;

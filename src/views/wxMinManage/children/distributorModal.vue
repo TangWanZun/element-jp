@@ -60,7 +60,7 @@
                   <el-form-item label="经度" label-width="50px">
                     <el-input v-model="form.DocJson.Longitude" disabled></el-input>
                   </el-form-item>
-                  <el-form-item label="维度" label-width="50px">
+                  <el-form-item label="纬度" label-width="50px">
                     <el-input v-model="form.DocJson.Latitude" disabled></el-input>
                   </el-form-item>
                   <el-form-item label="详细地址" label-width="50px">
@@ -156,21 +156,6 @@ export default {
         this.form.DocId = data.UnionId;
         this.form.UnionGuid = data.UnionGuid;
         this.form.UnionGuidTemp = guid;
-        // this.form = {
-        //   DocType: "Dealer",
-        //   UnionGuid: "",
-        //   UnionGuidTemp: "",
-        //   DocJson: {
-        //     Name:data.Name, //名称
-        //     Descript: data.Descript, //门店介绍
-        //     ImgUrl:data.ImgUrl, //图片
-        //     Phone: "", //电话
-        //     Longitude: data.Longitude, //经度
-        //     Latitude:data.Latitude, //纬度
-        //     AddressName: data.AddressName, //地址简称
-        //     AddressDetails: data.AddressDetails //地址详情
-        //   }
-        // };
       }
       this.$nextTick(() => {
         //创建腾讯地图
@@ -226,9 +211,9 @@ export default {
      */
     addressChange(val) {
       // console.log('检索框获取当前选中值',val)
-      if (!val) {
-        return;
-      }
+      // if (!val) {
+      //   return;
+      // }
       //获取选中项信息
       let item = this.selectList[val];
       // console.log(item)
@@ -250,8 +235,8 @@ export default {
     createMap() {
       var _this = this;
       //1.创建坐标  为天安门
-      let lng = 116.397128;
-      let lat = 39.916527;
+      let lng = this.form.DocJson.Longitude||116.397128;
+      let lat = this.form.DocJson.Latitude||39.916527;
       //获取放置地图的dom
       var mapDom = document.querySelector("#containermap");
       //创建一个坐标

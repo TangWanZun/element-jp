@@ -4,6 +4,7 @@ import VuexPersistence from 'vuex-persist'
 
 //获取全部的modules
 import user from './modules/user'
+import page from './modules/page'
 
 Vue.use(Vuex)
 
@@ -14,7 +15,7 @@ const vuexLocal = new VuexPersistence({
 
 export default new Vuex.Store({
   modules:{
-    user
+    user,page
   },
   state: {
     

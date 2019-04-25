@@ -2,7 +2,7 @@
   <div style="height:100%">
     <div class="body">
       <!-- 精品分类 -->
-      <leftCard class="left-card" @row-click="rowClick"></leftCard>
+      <leftCard class="left-card" @on-upload="leftOnUpload" @row-click="rowClick"></leftCard>
       <!-- 精品详情 -->
       <rightCard class="right-card" ref="rightCard"> </rightCard>
     </div>
@@ -18,6 +18,13 @@ export default {
     rightCard
   },
   methods:{
+    /**
+     * 当左侧数据加载完成的时候
+     */
+    leftOnUpload(){
+      //默认点击全部分类
+      this.rowClick();
+    },
     /**
      * 单击分类信息行信息的时候
      */

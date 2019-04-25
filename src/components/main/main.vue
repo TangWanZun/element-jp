@@ -145,9 +145,8 @@ export default {
             type: "success",
             message: "退出当前账号!"
           });
-          this.$router.replace('/Loading/index')
           //清空数据
-          this.$store.commit('loading/setUserInfo',{})
+          this.$store.dispatch('user/userLoginOut');
         })
         .catch(() => {
           // this.$message({
