@@ -17,7 +17,7 @@
             <el-button type="text">忘记密码</el-button>
           </div>
           <div class="content-item">
-            <el-button style="width:100%" type="primary" @click.native="submitBtn">登录</el-button>
+            <el-button style="width:100%" type="primary" @click.native="submitBtn" :loading="submitLoading">登录</el-button>
           </div>
         </div>
       </div>
@@ -30,6 +30,7 @@ export default {
   data(){
     return{
       bg:require('@/assets/fz/registerBg.svg'),
+      submitLoading:false,
       formData:{
         //用户名
         inputUser:'',
@@ -44,6 +45,7 @@ export default {
      * 登录
      */
     submitBtn(){
+      this.submitLoading = true;
       //提交信息
       this.$store.dispatch('user/userLoginAction',{
         userName:this.formData.inputUser,
@@ -51,6 +53,9 @@ export default {
       })
         .then(()=>{
           this.$router.replace('/');
+        })
+        .finally(()=>{
+          this.submitLoading = false;
         })
     }
   }

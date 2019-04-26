@@ -8,17 +8,17 @@
         background-color="#001529"
         text-color="#8a8a8a"
         >
-        <el-menu-item index="/wxMinManage/cartype">
-          <i class="el-icon-menu"></i>
-          <span slot="title">车型定义</span>
+        <el-menu-item index="/wxMinManage/distributor" >
+          <i class="el-icon-document"></i>
+          <span slot="title">经销商管理</span>
         </el-menu-item>
         <el-menu-item index="/wxMinManage/boutique" >
           <i class="el-icon-goods"></i>
           <span slot="title">精品定义</span>
         </el-menu-item>
-        <el-menu-item index="/wxMinManage/distributor" >
-          <i class="el-icon-document"></i>
-          <span slot="title">经销商管理</span>
+        <el-menu-item index="/wxMinManage/cartype">
+          <i class="el-icon-menu"></i>
+          <span slot="title">车型定义</span>
         </el-menu-item>
       </el-menu>
     </div>

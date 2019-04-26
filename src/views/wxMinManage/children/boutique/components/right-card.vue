@@ -53,7 +53,9 @@
 import rightCardModal from "./right-card-modal";
 import cardTable from "@/components/card-table";
 import { setTimeout } from "timers";
-import {getJpItem} from "@/api/data"
+import { getJpItem } from "@/api/data";
+import { delData } from "@/api/public";
+
 export default {
   components: {
     rightCardModal,
@@ -108,13 +110,13 @@ export default {
       //     Start: (page-1)*25,
       //     Limit: 25,
       //     p1:this.data.UnionId,
-      //     Searchv:this.searchInput 
+      //     Searchv:this.searchInput
       //   }
       // })
       getJpItem({
         page,
-        unionId:this.data.UnionId,
-        searchv:this.searchInput 
+        unionId: this.data.UnionId,
+        searchv: this.searchInput
       })
         .then(res => {
           // console.log(res);
@@ -152,25 +154,35 @@ export default {
      * 添加行按钮
      */
     addButton() {
-      this.$refs.rightCardModal.show({},{
-        //添加当前分类
-        _unionCode:this.data.UnionId,
-        _unionName:this.data.Name
-      });
+      this.$refs.rightCardModal.show(
+        {},
+        {
+          //添加当前分类
+          _unionCode: this.data.UnionId,
+          _unionName: this.data.Name
+        }
+      );
     },
     /**
      * 删除行按钮
      */
     delButton() {
-      for (let i = this.selectionLine.length - 1; i >= 0; i--) {
-        this.tableData.splice(this.selectionLine[i]._index, 1);
-      }
+      // for (let i = this.selectionLine.length - 1; i >= 0; i--) {
+      //   this.tableData.splice(this.selectionLine[i]._index, 1);
+      // }
+      delData({
+        docType: "JpItem",
+        list: this.selectionLine
+      })
+        .then((res)=>{
+          this.getData();
+        })
     },
     /**
      * 双击行信息的时候
      */
     rowDblclick(row, column, event) {
-      this.$refs.rightCardModal.show({isAdd:false},Object.assign({},row) );
+      this.$refs.rightCardModal.show({ isAdd: false }, Object.assign({}, row));
     },
     /**
      * 当分页的页码改变的时候

@@ -15,7 +15,7 @@
           <el-tab-pane label="基本信息" name="tabs-1">
             <el-form label-position="left" ref="form" :model="form" label-width="90px" size="mini">
               <el-form-item label="经销商图片">
-                <uploadImg @on-upload="ImgOnUpload"  :imgUrl="form.DocJson.ImgUrl"></uploadImg>
+                <uploadImg @on-upload=" form.DocJson.ImgUrl=$event"  :imgUrl="form.DocJson.ImgUrl"></uploadImg>
               </el-form-item>
               <el-form-item label="经销商名称">
                 <el-input v-model="form.DocJson.Name"></el-input>
@@ -189,12 +189,6 @@ export default {
         .finally(() => {
           this.submitLoad = false;
         });
-    },
-    /**
-     * 图片数据更新
-     */
-    ImgOnUpload(data){
-      this.form.DocJson.ImgUrl = data;
     },
     /**
      * 检索框数据发生变化

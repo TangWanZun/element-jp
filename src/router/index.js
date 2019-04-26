@@ -45,7 +45,7 @@ router.beforeEach((to, from, next) => {
 	}
 	if(to.path=="/"){
 		//默认跳转到主数据管理页面
-		next('/wxMinManage/cartype')
+		next('/wxMinManage/distributor')
 		return
 	}
 	next();

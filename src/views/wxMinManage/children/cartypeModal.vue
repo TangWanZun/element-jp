@@ -13,7 +13,7 @@
       <div class="dialog-body">
         <el-form label-position="left" ref="form" :model="form" label-width="80px" size="mini">
           <el-form-item label="车型图片">
-            <uploadImg :imgUrl="form.DocJson.ImgUrl" @on-upload="form.DocJson.ImgUrl=$emite"></uploadImg>
+            <uploadImg :imgUrl="form.DocJson.ImgUrl" @on-upload="form.DocJson.ImgUrl=$event"></uploadImg>
           </el-form-item>
           <el-form-item label="车型名称">
             <el-input v-model="form.DocJson.Name"></el-input>

@@ -9,7 +9,7 @@
           placeholder="请输入查询条件"
           style="width:150px;margin-right:10px"
         ></el-input>
-        <el-button type="primary" size="small" icon="el-icon-search" circle></el-button> -->
+        <el-button type="primary" size="small" icon="el-icon-search" circle></el-button>-->
         <el-button type="primary" size="small" @click="addButton">新增</el-button>
         <el-button type="danger" size="small" :disabled="delDisabled" @click="delButton">删除</el-button>
       </template>
@@ -25,7 +25,7 @@
         @row-dblclick="rowDblclick"
         @row-click="rowClick"
       >
-        <el-table-column type="selection" width="55"></el-table-column>
+        <el-table-column type="selection" width="55" :selectable="selectionFun"></el-table-column>
         <el-table-column type="index" width="50"></el-table-column>
         <el-table-column prop="Name" label="分类名称"></el-table-column>
         <!-- <el-table-column prop="phone" label="分类精品数量" width="150"></el-table-column> -->
@@ -40,7 +40,7 @@
           @current-change="currentChange"
           small
         ></el-pagination>
-      </template> -->
+      </template>-->
     </card-table>
     <leftCardModal ref="leftCardModal" @on-upload="onUpload"></leftCardModal>
   </div>
@@ -50,7 +50,9 @@
 import leftCardModal from "./left-card-modal";
 import cardTable from "@/components/card-table";
 import { setTimeout } from "timers";
-import {getItemGroup} from "@/api/data"
+import { getItemGroup } from "@/api/data";
+import { delData } from "@/api/public";
+
 export default {
   components: {
     leftCardModal,
@@ -60,8 +62,8 @@ export default {
     return {
       tableData: [
         {
-          Name:'全部',
-          UnionGuid:''
+          Name: "全部",
+          UnionGuid: ""
         }
       ],
       //选择的行信息
@@ -69,7 +71,7 @@ export default {
       //列表loading
       tableLoading: false,
       //搜索
-      searchInput: "",
+      searchInput: ""
       //全部数据
       // pageTotal:0
     };
@@ -87,24 +89,30 @@ export default {
     /**
      * 获取数据
      */
-    getData(page = 0) {
+    getData(page = 1) {
       this.tableLoading = true;
-      this.tableData.length=1;
+      this.tableData.length = 1;
       getItemGroup()
-      .then((res)=>{
-        this.tableData =this.tableData.concat(res.List||[]);
-        this.$emit('on-upload',res)
-        // this.pageTotal = res.Total||0;
-      })
-      .finally(()=>{
-        this.tableLoading = false;
-      })
+        .then(res => {
+          this.tableData = this.tableData.concat(res.List || []);
+          this.$emit("on-upload", res);
+          // this.pageTotal = res.Total||0;
+        })
+        .finally(() => {
+          this.tableLoading = false;
+        });
     },
     /**
      * 行回调函数
      */
     rowClassName({ row, rowIndex }) {
       row._index = rowIndex;
+    },
+    /**
+     * 表格头 选框回调
+     */
+    selectionFun(row, index){
+      return index!==0
     },
     /**
      * 当选择项发生变化的时候
@@ -122,9 +130,16 @@ export default {
      * 删除行按钮
      */
     delButton() {
-      for (let i = this.selectionLine.length - 1; i >= 0; i--) {
-        this.tableData.splice(this.selectionLine[i]._index, 1);
-      }
+      // for (let i = this.selectionLine.length - 1; i >= 0; i--) {
+      //   this.tableData.splice(this.selectionLine[i]._index, 1);
+      // }
+      delData({
+        docType: "ItemGroup",
+        list: this.selectionLine
+      })
+        .then((res)=>{
+          this.getData();
+        })
     },
     /**
      * 单击行信息的时候
@@ -136,7 +151,9 @@ export default {
      * 双击行信息的时候
      */
     rowDblclick(row, column, event) {
-      this.$refs.leftCardModal.show();
+      //当点击为全部的时候，是无法打开修改的
+      if(row._index==0)return
+      this.$refs.leftCardModal.show({}, Object.assign({}, row));
     },
     /**
      * 当分页的页码改变的时候
@@ -150,7 +167,7 @@ export default {
     /**
      * 新增分类
      */
-    onUpload(){
+    onUpload() {
       this.getData();
     }
   }

@@ -21,8 +21,8 @@
         </el-form>
       </div>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="close">取 消</el-button>
         <el-button type="primary" @click="submit">保 存</el-button>
+        <el-button @click="close">取 消</el-button>
       </span>
     </el-dialog>
   </div>
@@ -42,6 +42,8 @@ export default {
   data() {
     return {
       meValue: false,
+      //是否为增加
+      isAddState:false,
       //大图图片
       form: {
         DocType: "ItemGroup",
@@ -59,7 +61,17 @@ export default {
      * 显示
      * 系统页面初始化
      */
-    show(data) {
+    show({}={},data) {
+      // console.log(data);
+      if(!data){
+        this.isAddState = true;
+      }else{
+        //修改状态
+        this.isAddState = false;
+        this.form.DocJson = data;
+        this.form.UnionGuid = data.UnionGuid;
+        this.form.DocId = data.UnionId;
+      }
       this.meValue = true;
     },
     /**
@@ -67,8 +79,8 @@ export default {
      */
     submit() {
       let guid = uuidv1();
-      this.form.UnionGuid = guid;
       this.form.UnionGuidTemp = guid;
+      this.form.UnionGuid =this.form.UnionGuid||guid;
       this.$request({
         url: "/DoAction/Submit",
         data: this.form

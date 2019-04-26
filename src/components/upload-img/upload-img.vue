@@ -93,10 +93,10 @@ export default {
      */
     handleAvatarSuccess(res, file) {
       console.log(res);
-      if(res.Success){
+      if(res.ErrCode==0){
         this.$emit('on-upload',res.Data)
       }
-      this.imageUrl = URL.createObjectURL(file.raw);
+      // this.imageUrl = URL.createObjectURL(file.raw);
     },
     /**
      * 上传之前

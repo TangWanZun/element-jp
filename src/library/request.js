@@ -36,6 +36,7 @@ export const request = function ({
       .catch((error) => {
         //访问url报错，比如 404
         Message.error(error.toString())
+        reject(error)
         console.log(error)
       })
   })

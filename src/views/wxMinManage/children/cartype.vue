@@ -19,13 +19,15 @@
             :key="item.UnionId"
           >
             <div class="item-box" :style="{'backgroundImage':'url('+imgUrl+item.ImgUrl+')'}">
-              <div class="item-header" @click="push(key)">
-                <div>{{item.Name}}</div>
-                <i class="el-icon-arrow-right"></i>
-              </div>
-              <div class="item-setup">
-                <i class="el-icon-delete" @click.stop="deleteBtn" style="margin-right:10px"></i>
-                <i class="el-icon-setting" @click.stop="cartypeModalSetting(key)"></i>
+              <div class="item-content">
+                <div class="item-header" @click="push(key)">
+                  <div>{{item.Name}}</div>
+                  <i class="el-icon-arrow-right"></i>
+                </div>
+                <div class="item-setup">
+                  <i class="el-icon-delete" @click.stop="deleteBtn(key)" style="margin-right:10px"></i>
+                  <i class="el-icon-setting" @click.stop="cartypeModalSetting(key)"></i>
+                </div>
               </div>
             </div>
           </el-card>
@@ -41,6 +43,8 @@
 <script>
 import cartypeModal from "./cartypeModal";
 import { IMG_URL } from "@/config";
+import { delData } from "@/api/public";
+
 export default {
   name: "cartype",
   components: {
@@ -90,7 +94,7 @@ export default {
      */
     push(key) {
       //缓存数据
-      this.$store.commit('page/setClassifyCache',this.formData[key]);
+      this.$store.commit("page/setClassifyCache", this.formData[key]);
       this.$router.push("/wxMinManage/classify");
     },
     /**
@@ -102,22 +106,28 @@ export default {
     /**
      * 车型修改
      */
-    cartypeModalSetting(key){
-      this.$refs.cartypeModalRef.show(Object.assign({},this.formData[key]));
+    cartypeModalSetting(key) {
+      this.$refs.cartypeModalRef.show(Object.assign({}, this.formData[key]));
     },
     /**
      * 删除车型
      */
-    deleteBtn() {
+    deleteBtn(key) {
       this.$confirm("此操作将永久删除该车型?", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning"
       })
         .then(() => {
-          this.$message({
-            type: "success",
-            message: "删除成功!"
+          delData({
+            docType: "CarSer",
+            list: [this.formData[key]]
+          }).then(res => {
+            this.$message({
+              type: "success",
+              message: "删除成功!"
+            });
+            this.getData();
           });
         })
         .catch(() => {
@@ -130,7 +140,7 @@ export default {
     /**
      * 弹框数据更新
      */
-    modalOnUpload(){
+    modalOnUpload() {
       this.getData();
     }
   }
@@ -150,14 +160,22 @@ export default {
   width: 300px;
   margin-right: 15px;
   margin-bottom: 15px;
-  background-color: rgba(0, 0, 0, 0.2);
   .item-box {
     width: 100%;
     height: 100%;
     background-size: cover;
     background-position: center;
-    padding-top: 15px;
     position: relative;
+    //承载内容
+    .item-content{
+      position: absolute;
+      width:100%;
+      height: 100%;
+      left:0;
+      top:0;
+      background-color: rgba(0, 0, 0, 0.3);
+      padding-top: 15px;
+    }
     .item-header {
       display: flex;
       justify-content: space-between;

@@ -26,7 +26,7 @@
                 </el-select>
               </el-form-item>
               <el-form-item label="精品图片">
-                <uploadImg :imgUrl="form.DocJson.ImgUrl" @on-upload="form.DocJson.ImgUrl=$emite"></uploadImg>
+                <uploadImg :imgUrl="form.DocJson.ImgUrl" @on-upload="form.DocJson.ImgUrl=$event"></uploadImg>
               </el-form-item>
               <div class="itemFlex">
                 <el-form-item label="集采编码">

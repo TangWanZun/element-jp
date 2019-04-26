@@ -81,7 +81,7 @@ export default {
           code: "A02",
           name: "主数据管理",
           img: require("@/assets/icon/xcxgl.svg"),
-          to: "/wxMinManage/cartype"
+          to: "/wxMinManage/distributor"
         },
         // {
         //   code: "A03",

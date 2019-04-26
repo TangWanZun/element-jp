@@ -26,6 +26,9 @@ export default {
 						commit('setRsid',res);
 						resolve()
 					})
+					.catch((error)=>{
+						reject(error)
+					})
 			})
 		},
 		/**

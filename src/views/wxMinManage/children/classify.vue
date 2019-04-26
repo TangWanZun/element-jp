@@ -51,8 +51,16 @@
                 <img :src="imgUrl+cardItem.ImgUrl" alt srcset>
                 <div>{{cardItem.Name}}</div>
                 <!-- 删除按钮 -->
-                <div class="card-item-del" @click.stop="delItemButton(key,cardIndex)">
+                <div
+                  class="card-item-del"
+                  @click.stop="delItemButton(key,cardIndex)"
+                  v-if="!cardItem.IsAdapAll"
+                >
                   <i class="el-icon-delete"></i>
+                </div>
+                <div class="card-item-qx" v-else>
+                  <!-- <i class="el-icon-delete"></i> -->
+                  全
                 </div>
               </div>
             </el-card>
@@ -102,6 +110,7 @@ import { setTimeout } from "timers";
 import { IMG_URL } from "@/config";
 import { getItemGroup } from "@/api/data";
 import { arrUnique } from "@/library/util";
+import uuidv1 from "uuid/v1";
 
 export default {
   name: "classify",
@@ -129,8 +138,7 @@ export default {
     };
   },
   created() {
-    // console.log(this.parentData);
-
+    console.log(this.parentData);
     //数据拉取
     this.getData();
   },
@@ -242,11 +250,15 @@ export default {
       switch (obj.name) {
         //点击删除当前分类
         case "delClass": {
-          this.$confirm("此操作将永久删除该分类, 是否继续?", "提示", {
-            confirmButtonText: "确定",
-            cancelButtonText: "取消",
-            type: "warning"
-          })
+          this.$confirm(
+            "此操作将删除该分类及其分类下的精品, 是否继续?",
+            "提示",
+            {
+              confirmButtonText: "确定",
+              cancelButtonText: "取消",
+              type: "warning"
+            }
+          )
             .then(() => {
               this.dataList.splice(obj.key, 1);
               this.$message({
@@ -292,12 +304,43 @@ export default {
      * 保存修改信息
      */
     dataSubmit() {
-      // this.$request({
-      //   url:''
+      let guid = uuidv1();
+      let dataList = this.dataList;
+      //获取适配表的版本号
+      let meGuid = dataList.length == 0 ? guid : dataList[0].VerNum || guid;
+      //获取全部的精品数据
+      let itemList = [];
+      //合并精品数据
+      for (let i = 0; i < dataList.length; i++) {
+        itemList = itemList.concat(dataList[i].List);
+      }
+      // console.log({
+      //   DocType: "CarSerJpItem",
+      //     ActionType: "AddOrUpdate",
+      //     DocId: this.parentData.UnionId,
+      //     UnionGuid: meGuid,
+      //     UnionGuidTemp: guid,
+      //     DocJson: {
+      //       List: itemList
+      //     }
       // })
-      this.$message({
-        type: "success",
-        message: "保存成功!"
+      this.$request({
+        url: "/DoAction/Submit",
+        data: {
+          DocType: "CarSerJpItem",
+          ActionType: "AddOrUpdate",
+          DocId: this.parentData.UnionId,
+          UnionGuid: meGuid,
+          UnionGuidTemp: guid,
+          DocJson: {
+            List: itemList
+          }
+        }
+      }).then(res => {
+        this.$message({
+          type: "success",
+          message: "保存成功!"
+        });
       });
     }
   }
@@ -393,7 +436,7 @@ export default {
               height: 100px;
               background-color: rgba(0, 0, 0, 0.2);
               object-position: center;
-              object-fit: contain;
+              object-fit: cover;
             }
             > div {
               font-size: 15px;
@@ -416,6 +459,14 @@ export default {
               transition: 0.2s;
               &:hover {
                 background-color: rgb(255, 107, 107);
+              }
+            }
+            //适配全部车辆
+            .card-item-qx {
+              .card-item-del;
+              display: flex;
+              &:hover {
+                background-color: rgba(0, 0, 0, 0.5);
               }
             }
             &:hover > .card-item-del {

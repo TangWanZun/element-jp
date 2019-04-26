@@ -16,7 +16,7 @@
           :data="tableData"
           stripe
           style="width: 100%"
-          height="300"
+          height="270"
           size="mini"
           v-loading="subLoading"
           @selection-change="selectionChange"
@@ -32,6 +32,13 @@
             min-width="180"
           ></el-table-column>
         </el-table>
+        <el-pagination
+          background
+          layout="prev, pager, next,jumper"
+          :total="pageTotal"
+          small
+          @current-change="currentChange"
+        ></el-pagination>
       </div>
       <span slot="footer" class="dialog-footer">
         <!-- <el-button @click="addItem" style="float:left">新增精品</el-button> -->
@@ -81,7 +88,9 @@ export default {
       //条目编辑选择的行信息
       selectionLine: [],
       //外面传递进来的数据
-      parentData: {}
+      parentData: {},
+      //总页数
+      pageTotal: 0
     };
   },
   computed: {
@@ -122,6 +131,8 @@ export default {
         searchv: ""
       })
         .then(res => {
+          //获取页数
+          this.pageTotal = res.Total;
           //获取当前分类已经选择的数据
           let list = this.parentData.List;
           //这里添加是否添加的标识
@@ -144,8 +155,8 @@ export default {
     /**
      * 判断当前精品是否可以点击
      */
-    selectable(row){
-      return row._isAdd=='-';
+    selectable(row) {
+      return row._isAdd == "-";
     },
     /**
      * 页面关闭|
@@ -157,9 +168,9 @@ export default {
     /**
      * 点击添加按钮
      */
-    submit(){
+    submit() {
       // console.log(this.selectionLine);
-      this.$emit('on-upload',this.selectionLine);
+      this.$emit("on-upload", this.selectionLine);
       this.close();
     },
     /**
@@ -182,7 +193,15 @@ export default {
       //上的适配车型将自动添加本页面展示的车型
       this.$refs.rightCardModal.show({});
     },
-
+    /**
+     * 当分页的页码改变的时候
+     */
+    currentChange(page) {
+      //清空数据
+      this.tableData = [];
+      //获取数据
+      this.getData(page);
+    }
   }
 };
 </script>
