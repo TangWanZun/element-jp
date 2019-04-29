@@ -17,7 +17,7 @@ export default [
 				children: [
 					{
 						path: 'cartype',
-						name: '车型定义',
+						name: '车系定义',
 						component: r => require.ensure([], () => r(require('@/views/wxMinManage/children/cartype')), 'cartype'),
 					},
 					{

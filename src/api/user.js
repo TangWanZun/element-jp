@@ -12,3 +12,12 @@ export const login = ({ userName, password }) => {
 		}
 	})
 }
+
+/**
+ * 告知后台退出登录
+ */
+export const loginOut = () => {
+	return request({
+		url: '/Login/LoginOut',
+	})
+}

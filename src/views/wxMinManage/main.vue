@@ -14,11 +14,11 @@
         </el-menu-item>
         <el-menu-item index="/wxMinManage/boutique" >
           <i class="el-icon-goods"></i>
-          <span slot="title">精品定义</span>
+          <span slot="title">精品管理</span>
         </el-menu-item>
         <el-menu-item index="/wxMinManage/cartype">
           <i class="el-icon-menu"></i>
-          <span slot="title">车型定义</span>
+          <span slot="title">车系精品管理</span>
         </el-menu-item>
       </el-menu>
     </div>

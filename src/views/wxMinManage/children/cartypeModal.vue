@@ -12,10 +12,10 @@
     >
       <div class="dialog-body">
         <el-form label-position="left" ref="form" :model="form" label-width="80px" size="mini">
-          <el-form-item label="车型图片">
+          <el-form-item label="车系图片">
             <uploadImg :imgUrl="form.DocJson.ImgUrl" @on-upload="form.DocJson.ImgUrl=$event"></uploadImg>
           </el-form-item>
-          <el-form-item label="车型名称">
+          <el-form-item label="车系名称">
             <el-input v-model="form.DocJson.Name"></el-input>
           </el-form-item>
         </el-form>
@@ -74,7 +74,7 @@ export default {
         this.addState = false;
         this.form.DocJson = data;
         this.form.UnionGuid = data.UnionGuid;
-        this.form.DocId = data.UnionId;
+        this.form.DocId = data.DocId;
       }
     },
     /**

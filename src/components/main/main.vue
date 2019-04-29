@@ -135,7 +135,7 @@ export default {
      * 退出账号
      */
     exitUser() {
-      this.$confirm("是否退出当前账号", "提示", {
+      this.$confirm("是否退出当前账号？", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning"

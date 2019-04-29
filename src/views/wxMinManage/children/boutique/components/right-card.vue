@@ -28,18 +28,19 @@
         <el-table-column type="selection" width="55"></el-table-column>
         <el-table-column type="index" width="50"></el-table-column>
         <!-- <el-table-column prop="name" label="精品图片"></el-table-column> -->
-        <el-table-column prop="Code" label="集采产品编码" width="150" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="Code" label="精品编码" width="250" show-overflow-tooltip></el-table-column>
         <el-table-column prop="Name" label="精品名称" show-overflow-tooltip></el-table-column>
         <!-- <el-table-column prop="IsAdapAll" label="是否适配全车系" ></el-table-column> -->
-        <!-- <el-table-column prop="car" label="适配车型" show-overflow-tooltip></el-table-column> -->
+        <!-- <el-table-column prop="car" label="适配车系" show-overflow-tooltip></el-table-column> -->
         <!-- <el-table-column prop="phone" label="分类精品数量" width="150"></el-table-column> -->
         <!-- <el-table-column prop="address" label="地址"></el-table-column> -->
       </el-table>
       <template slot="footer">
         <el-pagination
           background
-          layout="prev, pager, next,jumper"
+          layout="total,prev, pager, next,jumper"
           :total="pageTotal"
+          :page-size="25"
           @current-change="currentChange"
           small
         ></el-pagination>
@@ -92,7 +93,7 @@ export default {
      * 数据更新
      */
     dataShow(data) {
-      // console.log(data);
+      // //console.log(data);
       // 保存分类ID
       this.data = data;
       //获取数据
@@ -109,17 +110,17 @@ export default {
       //     DocType: "JpItem",
       //     Start: (page-1)*25,
       //     Limit: 25,
-      //     p1:this.data.UnionId,
+      //     p1:this.data.DocId,
       //     Searchv:this.searchInput
       //   }
       // })
       getJpItem({
         page,
-        unionId: this.data.UnionId,
+        unionId: this.data.DocId,
         searchv: this.searchInput
       })
         .then(res => {
-          // console.log(res);
+          // //console.log(res);
           this.tableData = res.List || [];
           this.pageTotal = res.Total || 0;
         })
@@ -158,7 +159,7 @@ export default {
         {},
         {
           //添加当前分类
-          _unionCode: this.data.UnionId,
+          _unionCode: this.data.DocId,
           _unionName: this.data.Name
         }
       );
@@ -170,13 +171,20 @@ export default {
       // for (let i = this.selectionLine.length - 1; i >= 0; i--) {
       //   this.tableData.splice(this.selectionLine[i]._index, 1);
       // }
-      delData({
-        docType: "JpItem",
-        list: this.selectionLine
+      this.$confirm("是否确认删除？", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
       })
-        .then((res)=>{
-          this.getData();
+        .then(() => {
+          delData({
+            docType: "JpItem",
+            list: this.selectionLine
+          }).finally(res => {
+            this.getData();
+          });
         })
+        .catch(() => {});
     },
     /**
      * 双击行信息的时候

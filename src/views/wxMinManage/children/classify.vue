@@ -10,70 +10,88 @@
           size="small"
         >上一页</el-button>
         {{parentData.Name}}
-        <el-button @click="dataSubmit" type="primary" style="float:right" size="small">保存修改</el-button>
+        <el-button
+          @click="dataSubmit"
+          type="primary"
+          style="float:right"
+          size="small"
+          :loading="subLoading"
+        >保存修改</el-button>
       </div>
       <div class="body-content" v-loading="contentLoading">
-        <div
-          shadow="hover"
-          :body-style="{padding:'0px'}"
-          class="box-card"
-          v-for="(item,key) in dataList"
-          :key="key"
-        >
-          <!-- 头部 -->
-          <div class="box-card-header">
-            <span>{{item.Name}}</span>
-            <div style="float: right;">
-              <el-dropdown @command="dropdownCommand">
-                <span class="el-dropdown-link">
-                  更多
-                  <i class="el-icon-arrow-down el-icon--right"></i>
-                </span>
-                <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item
-                    icon="el-icon-delete"
-                    :command="{name:'delClass',key:key}"
-                  >删除当前分类</el-dropdown-item>
-                </el-dropdown-menu>
-              </el-dropdown>
-            </div>
-          </div>
-          <!-- 内容 -->
-          <div class="box-card-content">
-            <el-card
-              v-for="(cardItem,cardIndex) in item.List"
-              :key="cardIndex"
-              class="card-item"
-              :body-style="{padding:'0px'}"
-              shadow="never"
-            >
-              <div class="card-item-in">
-                <img :src="imgUrl+cardItem.ImgUrl" alt srcset>
-                <div>{{cardItem.Name}}</div>
-                <!-- 删除按钮 -->
-                <div
-                  class="card-item-del"
-                  @click.stop="delItemButton(key,cardIndex)"
-                  v-if="!cardItem.IsAdapAll"
-                >
-                  <i class="el-icon-delete"></i>
-                </div>
-                <div class="card-item-qx" v-else>
-                  <!-- <i class="el-icon-delete"></i> -->
-                  全
-                </div>
+        <div id="body-content">
+          <div
+            shadow="hover"
+            :body-style="{padding:'0px'}"
+            class="box-card"
+            v-for="(item,key) in dataList"
+            :key="item.ItemGroup"
+          >
+            <!-- 头部 -->
+            <div class="box-card-header">
+              <span>
+                <i class="el-icon-rank"></i>
+                {{item.ItemGroupName}}
+              </span>
+              <div style="float: right;">
+                <el-dropdown @command="dropdownCommand">
+                  <span class="el-dropdown-link">
+                    更多
+                    <i class="el-icon-arrow-down el-icon--right"></i>
+                  </span>
+                  <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item
+                      icon="el-icon-delete"
+                      :command="{name:'delClass',key:key}"
+                    >删除当前分类</el-dropdown-item>
+                  </el-dropdown-menu>
+                </el-dropdown>
               </div>
-            </el-card>
-            <div
-              class="card-add-bu"
-              :class="{'card-add-bu-absolute': item.List.length>3}"
-              @click="cardAddButton(key)"
-            >
-              <i class="el-icon-circle-plus-outline"></i>
-              添加精品
+            </div>
+            <!-- 内容 -->
+            <div class="box-card-content">
+              <div class="box-card-content-drop">
+                <el-card
+                  v-for="(cardItem,cardIndex) in item.List"
+                  :key="cardItem.DocId"
+                  class="card-item"
+                  :body-style="{padding:'0px'}"
+                  shadow="never"
+                >
+                  <div class="card-item-in">
+                    <div
+                      class="card-item-img"
+                      :style="'background-image:url('+imgUrl+cardItem.ImgUrl+')'"
+                    ></div>
+                    <!-- <img :src="imgUrl+cardItem.ImgUrl" alt srcset> -->
+                    <div>{{cardItem.Name}}</div>
+                    <!-- 删除按钮 -->
+                    <div
+                      class="card-item-del"
+                      @click.stop="delItemButton(key,cardIndex)"
+                      v-if="!cardItem.IsAdapAll"
+                    >
+                      <i class="el-icon-delete"></i>
+                    </div>
+                    <div class="card-item-qx" v-else>
+                      <!-- <i class="el-icon-delete"></i> -->
+                      全
+                    </div>
+                  </div>
+                </el-card>
+              </div>
+              <div
+                class="card-add-bu"
+                :class="{'card-add-bu-absolute': item.List.length>3}"
+                @click="cardAddButton(key)"
+              >
+                <i class="el-icon-circle-plus-outline"></i>
+                添加精品
+              </div>
             </div>
           </div>
         </div>
+
         <el-card class="box-card-add" shadow="hover" :class="{'box-card-add-show':isAddText}">
           <div class="box-card-add-text" v-if="!isAddText" @click="isAddText=true">新建精品分类</div>
           <div v-else>
@@ -88,9 +106,9 @@
               </el-select>
             </div>
             <div class="box-card-add-footer">
-              <el-button style="padding:8px 15px" type="text" @click="isAddText=false">取消</el-button>
-              <el-button style="padding:8px 15px;float:left" @click="addSingin">新建</el-button>
               <el-button style="padding:8px 15px" type="primary" @click="classifySend()">保存</el-button>
+              <el-button style="padding:8px 15px" type="text" @click="isAddText=false">取消</el-button>
+              <!-- <el-button style="padding:8px 15px;float:left" @click="addSingin">新建</el-button> -->
             </div>
           </div>
         </el-card>
@@ -111,6 +129,7 @@ import { IMG_URL } from "@/config";
 import { getItemGroup } from "@/api/data";
 import { arrUnique } from "@/library/util";
 import uuidv1 from "uuid/v1";
+import Sortable from "sortablejs";
 
 export default {
   name: "classify",
@@ -134,11 +153,13 @@ export default {
       //由父组件传递过来的数据
       parentData: this.$store.state.page.classifyCache,
       //当前添加的精品分类索引值
-      singInIndex: -1
+      singInIndex: -1,
+      //保存按钮的loading
+      subLoading: false
     };
   },
   created() {
-    console.log(this.parentData);
+    //console.log(this.parentData);
     //数据拉取
     this.getData();
   },
@@ -153,14 +174,21 @@ export default {
         data: {
           DocType: "CarSer",
           ActionType: "JpItemGroup",
-          DocId: this.parentData.UnionId //车系主键
+          DocId: this.parentData.DocId //车系主键
         }
       })
         .then(res => {
-          console.log(res);
           this.dataList = res || [];
           //获取精品分类
           this.meGetItemGroup();
+          //console.log(this.dataList);
+          //启动拖拽
+          this.$nextTick(function() {
+            //精品分类下的精品拖动排序
+            this.itemRowDrop();
+            //精品分类拖动排序
+            this.grundDrop();
+          });
         })
         .finally(() => {
           this.contentLoading = false;
@@ -174,7 +202,7 @@ export default {
       getItemGroup().then(res => {
         //这里需要进行去重
         this.classOptions =
-          arrUnique(res.List, this.dataList, "UnionId", "ContextUnionId") || [];
+          arrUnique(res.List, this.dataList, "DocId", "ItemGroup") || [];
       });
     },
     /**
@@ -193,11 +221,11 @@ export default {
      * 新建精品分类成功回调
      */
     leftCardModalOnUpload(res) {
-      console.log(res);
+      //console.log(res);
       //自动赋值
       this.classifySend({
-        UnionId: res.DocId,
-        Name: res.Name,
+        DocId: res.DocId,
+        ItemGroupName: res.Name,
         UnionGuid: res.UnionGuid
       });
     },
@@ -206,12 +234,12 @@ export default {
      */
     classifySend(data) {
       let item = data || this.classOptions[this.classifyIndex];
-      console.log(item);
+      //console.log(item);
       //添加新的精品分类
       this.dataList.push({
         ItemGroup: item.UnionGuid,
-        ContextUnionId: item.UnionId,
-        Name: item.Name,
+        ItemGroup: item.DocId,
+        ItemGroupName: item.Name,
         List: []
       });
       this.$message({
@@ -224,6 +252,11 @@ export default {
       this.isAddText = false;
       //并且刷新精品分类
       this.meGetItemGroup();
+      //并且对新增加的精品分类添加拖动排序
+      //启动拖拽
+      this.$nextTick(function() {
+        this.itemRowDrop(true);
+      });
     },
     /**
      * 添加精品
@@ -236,7 +269,7 @@ export default {
      * 添加精品回调
      */
     classifyModalOnUpload(res) {
-      console.log(res);
+      //console.log(res);
       let arr = [];
       this.dataList[this.singInIndex].List = arr.concat(
         this.dataList[this.singInIndex].List,
@@ -251,7 +284,7 @@ export default {
         //点击删除当前分类
         case "delClass": {
           this.$confirm(
-            "此操作将删除该分类及其分类下的精品, 是否继续?",
+            "此操作将删除该分类及该分类下所配置的精品，是否继续？",
             "提示",
             {
               confirmButtonText: "确定",
@@ -266,12 +299,7 @@ export default {
                 message: "删除成功!"
               });
             })
-            .catch(() => {
-              this.$message({
-                type: "info",
-                message: "已取消删除"
-              });
-            });
+            .catch(() => {});
           break;
         }
       }
@@ -304,6 +332,7 @@ export default {
      * 保存修改信息
      */
     dataSubmit() {
+      this.subLoading = true;
       let guid = uuidv1();
       let dataList = this.dataList;
       //获取适配表的版本号
@@ -314,10 +343,14 @@ export default {
       for (let i = 0; i < dataList.length; i++) {
         itemList = itemList.concat(dataList[i].List);
       }
-      // console.log({
+      //添加lineId
+      itemList.forEach((item, index) => {
+        item.LineId = index;
+      });
+      // //console.log({
       //   DocType: "CarSerJpItem",
       //     ActionType: "AddOrUpdate",
-      //     DocId: this.parentData.UnionId,
+      //     DocId: this.parentData.DocId,
       //     UnionGuid: meGuid,
       //     UnionGuidTemp: guid,
       //     DocJson: {
@@ -329,18 +362,66 @@ export default {
         data: {
           DocType: "CarSerJpItem",
           ActionType: "AddOrUpdate",
-          DocId: this.parentData.UnionId,
+          DocId: this.parentData.DocId,
           UnionGuid: meGuid,
           UnionGuidTemp: guid,
           DocJson: {
             List: itemList
           }
         }
-      }).then(res => {
-        this.$message({
-          type: "success",
-          message: "保存成功!"
+      })
+        .then(res => {
+          this.$message({
+            type: "success",
+            message: "保存成功!"
+          });
+        })
+        .finally(() => {
+          this.subLoading = false;
         });
+    },
+    /**
+     * 精品分类下的精品拖动排序
+     * isLastItemDrop 是否只对最后一个精品分类下的精品添加拖动排序
+     */
+    itemRowDrop(isLastItemDrop = false) {
+      let boxList = document.querySelectorAll(".box-card-content-drop");
+      const _this = this;
+      if (isLastItemDrop) {
+        //仅仅对最后一个添加拖动排序
+        let itemList = _this.dataList[boxList.length - 1];
+        Sortable.create(boxList[boxList.length - 1], {
+          onEnd({ newIndex, oldIndex }) {
+            // //console.log(i)
+            const currRow = itemList.List.splice(oldIndex, 1)[0];
+            itemList.List.splice(newIndex, 0, currRow);
+          }
+        });
+      } else {
+        for (let i = 0; i < boxList.length; i++) {
+          let itemList = _this.dataList[i];
+          Sortable.create(boxList[i], {
+            onEnd({ newIndex, oldIndex }) {
+              // //console.log(i)
+              const currRow = itemList.List.splice(oldIndex, 1)[0];
+              itemList.List.splice(newIndex, 0, currRow);
+            }
+          });
+        }
+      }
+    },
+    /**
+     * 精品分类拖拽
+     */
+    grundDrop() {
+      let _this = this;
+      //精品分类排序
+      Sortable.create(document.querySelector("#body-content"), {
+        handle: ".el-icon-rank",
+        onEnd({ newIndex, oldIndex }) {
+          const currRow = _this.dataList.splice(oldIndex, 1)[0];
+          _this.dataList.splice(newIndex, 0, currRow);
+        }
       });
     }
   }
@@ -366,14 +447,14 @@ export default {
     padding-right: 15px;
     flex-shrink: 0;
   }
+  //使用与拖放
   .body-content {
+    flex-grow: 1;
+    display: flex;
     width: 100%;
     height: 100%;
     overflow: auto;
-    display: flex;
-    align-content: flex-start;
     padding: 20px;
-    flex-grow: 1;
     &::after {
       content: "";
       flex-shrink: 0;
@@ -381,6 +462,32 @@ export default {
       height: 100%;
       width: 20px;
     }
+    // 添加精品分类
+    .box-card-add {
+      width: 250px;
+      height: 65px;
+      flex-shrink: 0;
+      .box-card-add-text {
+        font-size: 15px;
+        color: cornflowerblue;
+        cursor: pointer;
+      }
+      .box-card-add-footer {
+        margin-top: 10px;
+        display: flex;
+        justify-content: flex-end;
+      }
+    }
+    //添加精品打开
+    .box-card-add-show {
+      height: 120px;
+    }
+  }
+  //用于精品拖放
+  #body-content {
+    display: flex;
+    align-content: flex-start;
+
     .box-card {
       flex-shrink: 0;
       width: 250px;
@@ -392,11 +499,15 @@ export default {
       flex-direction: column;
       background-color: #eee;
       position: relative;
+      user-select: none;
       // 头部
       .box-card-header {
         padding: 10px 15px;
         flex-shrink: 0;
         font-weight: bold;
+        .el-icon-rank {
+          cursor: move;
+        }
         //更多按钮
         .el-dropdown-link {
           user-select: none;
@@ -430,13 +541,12 @@ export default {
             background-color: royalblue;
           }
           .card-item-in {
-            img {
-              display: block;
+            .card-item-img {
               width: 100%;
               height: 100px;
               background-color: rgba(0, 0, 0, 0.2);
-              object-position: center;
-              object-fit: cover;
+              background-size: cover;
+              background-position: center;
             }
             > div {
               font-size: 15px;
@@ -495,26 +605,6 @@ export default {
         padding: 15px 20px;
         background-color: #eee;
       }
-    }
-    // 添加精品分类
-    .box-card-add {
-      width: 250px;
-      height: 65px;
-      flex-shrink: 0;
-      .box-card-add-text {
-        font-size: 15px;
-        color: cornflowerblue;
-        cursor: pointer;
-      }
-      .box-card-add-footer {
-        margin-top: 10px;
-        display: flex;
-        justify-content: flex-end;
-      }
-    }
-    //添加精品打开
-    .box-card-add-show {
-      height: 120px;
     }
   }
 }

@@ -71,7 +71,9 @@ export default {
       //列表loading
       tableLoading: false,
       //搜索
-      searchInput: ""
+      searchInput: "",
+      //被选中的行
+      selectRow:0
       //全部数据
       // pageTotal:0
     };
@@ -89,13 +91,14 @@ export default {
     /**
      * 获取数据
      */
-    getData(page = 1) {
+    getData(page = 1, refreshRight = true) {
       this.tableLoading = true;
       this.tableData.length = 1;
       getItemGroup()
         .then(res => {
           this.tableData = this.tableData.concat(res.List || []);
-          this.$emit("on-upload", res);
+          //是否刷新右侧数据
+          if (refreshRight) this.$emit("on-upload", res);
           // this.pageTotal = res.Total||0;
         })
         .finally(() => {
@@ -107,12 +110,15 @@ export default {
      */
     rowClassName({ row, rowIndex }) {
       row._index = rowIndex;
+      if(rowIndex==this.selectRow){
+        return 'select-row-show'
+      }
     },
     /**
      * 表格头 选框回调
      */
-    selectionFun(row, index){
-      return index!==0
+    selectionFun(row, index) {
+      return index !== 0;
     },
     /**
      * 当选择项发生变化的时候
@@ -133,18 +139,27 @@ export default {
       // for (let i = this.selectionLine.length - 1; i >= 0; i--) {
       //   this.tableData.splice(this.selectionLine[i]._index, 1);
       // }
-      delData({
-        docType: "ItemGroup",
-        list: this.selectionLine
+      this.$confirm("是否确认删除？", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
       })
-        .then((res)=>{
-          this.getData();
+        .then(() => {
+          delData({
+            docType: "ItemGroup",
+            list: this.selectionLine
+          }).finally(res => {
+            this.getData();
+          });
         })
+        .catch(() => {});
     },
     /**
      * 单击行信息的时候
      */
     rowClick(row, column, event) {
+      // //console.log(row._index)
+      this.selectRow = row._index;
       this.$emit("row-click", row, column, event);
     },
     /**
@@ -152,27 +167,33 @@ export default {
      */
     rowDblclick(row, column, event) {
       //当点击为全部的时候，是无法打开修改的
-      if(row._index==0)return
+      if (row._index == 0) return;
       this.$refs.leftCardModal.show({}, Object.assign({}, row));
     },
     /**
      * 当分页的页码改变的时候
      */
-    currentChange(page) {
-      //清空数据
-      this.tableData = [];
-      //获取数据
-      this.getData(page);
-    },
+    // currentChange(page) {
+    //   //清空数据
+    //   this.tableData = [];
+    //   //获取数据
+    //   this.getData(page);
+    // },
     /**
      * 新增分类
      */
     onUpload() {
-      this.getData();
+      this.getData(null, false);
     }
   }
 };
 </script>
 
-<style lang="less" scoped>
+<style lang="less">
+.el-table .select-row-show td {
+    background: rgba(64, 160, 255, 0.411) !important;
+}
+// .select-row-show{
+//   background: red !important;
+// }
 </style>

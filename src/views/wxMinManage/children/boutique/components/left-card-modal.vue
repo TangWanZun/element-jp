@@ -62,7 +62,7 @@ export default {
      * 系统页面初始化
      */
     show({}={},data) {
-      // console.log(data);
+      // //console.log(data);
       if(!data){
         this.isAddState = true;
       }else{
@@ -70,7 +70,7 @@ export default {
         this.isAddState = false;
         this.form.DocJson = data;
         this.form.UnionGuid = data.UnionGuid;
-        this.form.DocId = data.UnionId;
+        this.form.DocId = data.DocId;
       }
       this.meValue = true;
     },

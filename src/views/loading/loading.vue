@@ -2,7 +2,8 @@
   <div class="register-body" :style="{'backgroundImage':'url('+bg+')'}">
       <div class="main">
         <div class="header">
-          <img src="@/assets/logo.svg" alt="" srcset="">
+          <!-- <img src="@/assets/logo.svg" alt="" srcset=""> -->
+          <img src="@/assets/logo.png" alt="" srcset="">
           <span>小程序精品后台管理系统</span>
         </div>
         <div class="content">
@@ -14,7 +15,7 @@
           </div>
           <div class="content-item content-item-flex">
             <el-checkbox v-model="checked">记住密码</el-checkbox>
-            <el-button type="text">忘记密码</el-button>
+            <!-- <el-button type="text">忘记密码</el-button> -->
           </div>
           <div class="content-item">
             <el-button style="width:100%" type="primary" @click.native="submitBtn" :loading="submitLoading">登录</el-button>
@@ -33,11 +34,12 @@ export default {
       submitLoading:false,
       formData:{
         //用户名
-        inputUser:'',
+        inputUser:this.$store.state.user.user.userName,
         //密码
-        inputPassword:''
+        inputPassword:this.$store.state.user.user.password
       },
-      checked:false
+      //是否记住密码
+      checked:this.$store.state.user.user.checked
     }
   },
   methods:{
@@ -52,6 +54,22 @@ export default {
         password:this.formData.inputPassword
       })
         .then(()=>{
+          // 判断是否勾选的记住密码
+          if(this.checked){
+            //是  ，保存用户名和密码
+            this.$store.commit('user/setUser',{
+              userName:this.formData.inputUser,
+              password:this.formData.inputPassword,
+              checked:this.checked
+            })
+          }else{
+            //否用户名密码清空
+            this.$store.commit('user/setUser',{
+              userName:'',
+              password:'',
+              checked:this.checked
+            })
+          }
           this.$router.replace('/');
         })
         .finally(()=>{

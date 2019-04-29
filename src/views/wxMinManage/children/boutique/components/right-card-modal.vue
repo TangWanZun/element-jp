@@ -16,12 +16,12 @@
           <el-tab-pane label="基本信息" name="tabs-1">
             <el-form label-position="left" ref="form" :model="form" label-width="80px" size="mini">
               <el-form-item label="精品分类">
-                <el-select v-model="form.DocJson.ItemGroup" clearable placeholder="请选择">
+                <el-select v-loading="itemGroupLoading" v-model="form.DocJson.ItemGroup" clearable placeholder="请选择">
                   <el-option
                     v-for="item in baseSelectOptions"
-                    :key="item.UnionId"
+                    :key="item.DocId"
                     :label="item.Name"
-                    :value="item.UnionId"
+                    :value="item.DocId"
                   ></el-option>
                 </el-select>
               </el-form-item>
@@ -29,7 +29,7 @@
                 <uploadImg :imgUrl="form.DocJson.ImgUrl" @on-upload="form.DocJson.ImgUrl=$event"></uploadImg>
               </el-form-item>
               <div class="itemFlex">
-                <el-form-item label="集采编码">
+                <el-form-item label="精品编码">
                   <el-input v-model="form.DocJson.Code"></el-input>
                 </el-form-item>
                 <el-form-item label="精品名称">
@@ -69,16 +69,19 @@
               </el-table>
             </div>
           </el-tab-pane>
-          <!-- 适配车型 -->
-          <el-tab-pane label="适配车型" name="tabs-3">
+          <!-- 适配车系 -->
+          <el-tab-pane label="适配车系" name="tabs-3">
             <div v-loading="subLoading">
               <el-select
+              v-loading="carSerSelLoading"
+              filterable
                 size="mini"
                 style="margin-right:10px"
                 v-model="table2Select"
                 multiple
                 collapse-tags
                 placeholder="请选择"
+                :disabled="form.DocJson.IsAdapAll"
               >
                 <el-option
                   v-for="(item,key) in carSerSelectOptions"
@@ -87,24 +90,37 @@
                   :value="key"
                 ></el-option>
               </el-select>
-              <el-button size="mini" type="primary" @click="addButton2">增加行</el-button>
-              <el-button size="mini" type="primary" @click="addCarType">新增车型</el-button>
-              <el-button size="mini" type="danger" :disabled="delDisabled2" @click="delButton2">删除行</el-button>
-              <el-switch style="margin-left:10px" v-model="form.DocJson.IsAdapAll" active-text="适配全车系" inactive-text=""></el-switch>
-              <el-table
-                :row-class-name="rowClassName"
-                :data="form.DocJson.List2"
-                stripe
-                style="width: 100%"
-                height="220"
-                size="mini"
-                @selection-change="selectionChange2"
-              >
-                <el-table-column type="selection" width="30"></el-table-column>
-                <!-- <el-table-column type="index" width="50"></el-table-column> -->
-                <el-table-column :show-overflow-tooltip="true" width="100" prop="Name" label="车型名称"></el-table-column>
-                <el-table-column :show-overflow-tooltip="true" prop="UnionId" label="车型编码"></el-table-column>
-              </el-table>
+              <el-button size="mini" type="primary" @click="addButton2" :disabled="form.DocJson.IsAdapAll">增加行</el-button>
+              <!-- <el-button size="mini" type="primary" @click="addCarType" :disabled="form.DocJson.IsAdapAll">新增车系</el-button> -->
+              <el-button size="mini" type="danger" :disabled="delDisabled2||form.DocJson.IsAdapAll" @click="delButton2">删除行</el-button>
+              <el-switch
+                style="margin-left:10px"
+                v-model="form.DocJson.IsAdapAll"
+                active-text="适配全车系"
+                inactive-text
+              ></el-switch>
+              <div class="table-body">
+                <div class="table-make" :class="{'table-make-show':form.DocJson.IsAdapAll}"></div>
+                <el-table
+                  :row-class-name="rowClassName"
+                  :data="form.DocJson.List2"
+                  stripe
+                  style="width: 100%"
+                  height="220"
+                  size="mini"
+                  @selection-change="selectionChange2"
+                >
+                  <el-table-column type="selection" width="30"></el-table-column>
+                  <!-- <el-table-column type="index" width="50"></el-table-column> -->
+                  <el-table-column
+                    :show-overflow-tooltip="true"
+                    width="100"
+                    prop="Name"
+                    label="车系名称"
+                  ></el-table-column>
+                  <el-table-column :show-overflow-tooltip="true" prop="DocId" label="车系编码"></el-table-column>
+                </el-table>
+              </div>
             </div>
           </el-tab-pane>
         </el-tabs>
@@ -143,7 +159,7 @@ export default {
       isAddData: true,
       //精品分类下拉框
       baseSelectOptions: [],
-      //车型下拉框
+      //车系下拉框
       carSerSelectOptions: [],
       //从外面传递进来的数据
       data: {},
@@ -154,7 +170,7 @@ export default {
         UnionGuid: "",
         UnionGuidTemp: "",
         DocJson: {
-          Code: "", //集采编码 
+          Code: "", //集采编码
           //标题信息
           Name: "",
           ImgUrl: "",
@@ -172,8 +188,12 @@ export default {
       selectionLine: [],
       //适配车i选哪个选择的行信息
       selectionLine2: [],
-      //适配车型的选择框
-      table2Select: []
+      //适配车系的选择框
+      table2Select: [],
+      //精品分类的loading
+      itemGroupLoading:false,
+      //车系下拉框的loading
+      carSerSelLoading:false
     };
   },
   created() {
@@ -185,7 +205,7 @@ export default {
      * 是否隐藏上传按钮
      */
     isNoneUpload() {
-      // console.log(1,this.formData.imgUrl)
+      // //console.log(1,this.formData.imgUrl)
       // return ?true:false;
     },
     //删除行是否为禁用
@@ -202,9 +222,7 @@ export default {
      * 显示
      * 系统页面初始化
      */
-    show({
-      isAdd=true
-      }={}, data={}) {
+    show({ isAdd = true } = {}, data = {}) {
       this.meValue = true;
       //启动保存按钮loading
       this.subLoading = true;
@@ -227,7 +245,7 @@ export default {
         this.form.DocJson = Object.assign(this.form.DocJson, data);
         //获取数据
         Promise.all([this.getData1(), this.getData2()]).then(res => {
-          // console.log(res);
+          // //console.log(res);
           this.form.DocJson.List1 = res[0].List || [];
           this.form.DocJson.List2 = res[1].List || [];
           this.subLoading = false;
@@ -238,6 +256,7 @@ export default {
      * 获取全部精品分类信息
      */
     getItemGroup() {
+      this.itemGroupLoading = true;
       this.$request({
         url: "/DoAction/GetSingleList",
         data: {
@@ -246,12 +265,14 @@ export default {
         }
       }).then(res => {
         this.baseSelectOptions = res.List || [];
+        this.itemGroupLoading = false
       });
     },
     /**
      * 获取车系下拉框
      */
     getCarSerSel() {
+      this.carSerSelLoading = true;
       this.$request({
         url: "/DoAction/GetSingleList",
         data: {
@@ -260,7 +281,8 @@ export default {
         }
       }).then(res => {
         this.carSerSelectOptions = res.List || [];
-      });
+        this.carSerSelLoading = false;
+      })
     },
     /**
      * 获取条目编辑信息
@@ -271,7 +293,7 @@ export default {
         data: {
           DocType: "JpItem",
           ActionType: "JpItem1",
-          DocId: this.data.UnionId //精品项目主键
+          DocId: this.data.DocId //精品项目主键
         }
       });
       // return new Promise((resolve, reject) => {
@@ -294,7 +316,7 @@ export default {
       // });
     },
     /**
-     * 获取适配车型信息
+     * 获取适配车系信息
      */
     getData2() {
       return this.$request({
@@ -302,16 +324,16 @@ export default {
         data: {
           DocType: "JpItem",
           ActionType: "JpItem2",
-          DocId: this.data.UnionId //精品项目主键
+          DocId: this.data.DocId //精品项目主键
         }
       });
       return new Promise((resolve, reject) => {
         this.table2Loading = true;
         setTimeout(() => {
-          //获取适配车型的信息
+          //获取适配车系的信息
           for (let i = 0; i < 3; i++) {
             this.form.DocJson.List2.push({
-              UnionId: "A0" + (i + 1),
+              DocId: "A0" + (i + 1),
               Name: "A系车"
             });
           }
@@ -339,9 +361,9 @@ export default {
         this.form.UnionGuid = guid;
       } else {
         this.form.UnionGuid = this.data.UnionGuid;
-        this.form.DocId = this.data.UnionId;
+        this.form.DocId = this.data.DocId;
       }
-      // console.log(this.form);
+      // //console.log(this.form);
       this.$request({
         url: "/DoAction/Submit",
         data: this.form
@@ -367,7 +389,7 @@ export default {
       this.selectionLine = selection;
     },
     /**
-     * 适配车型选择项发生变化的时候
+     * 适配车系选择项发生变化的时候
      */
     selectionChange2(selection) {
       this.selectionLine2 = selection;
@@ -383,10 +405,10 @@ export default {
       });
     },
     /**
-     *  适配车型添加行
+     *  适配车系添加行
      */
     addButton2() {
-      // console.log(this.table2Select);
+      // //console.log(this.table2Select);
       //将数据添加到表中
       let arr = this.table2Select;
       let list = this.form.DocJson.List2;
@@ -395,7 +417,7 @@ export default {
         //这里需要进行数据去重
         let isCf = false;
         for (let j = 0; j < list.length; j++) {
-          if (list[j].UnionId == item.UnionId) {
+          if (list[j].DocId == item.DocId) {
             isCf = true;
             break;
           }
@@ -406,7 +428,7 @@ export default {
       this.table2Select = [];
     },
     /**
-     * 新增车型
+     * 新增车系
      */
     addCarType() {
       this.$refs.cartypeModal.show();
@@ -420,7 +442,7 @@ export default {
       }
     },
     /**
-     * 适配车型删除行
+     * 适配车系删除行
      */
     delButton2() {
       for (let i = this.selectionLine2.length - 1; i >= 0; i--) {
@@ -470,5 +492,22 @@ export default {
 .dialog-body {
   width: 100%;
   height: 310px;
+}
+//添加适配车系  对表格的禁止修改
+.table-body{
+  position: relative;
+  .table-make{
+    position: absolute;
+    top:0px;
+    left:0px;
+    width:100%;
+    // height: 100%;
+    background-color: rgba(255, 255, 255, 0.8);
+    z-index: 2;
+    transition: 0.1s;
+  }
+  .table-make-show{
+    height: 100%;
+  }
 }
 </style>

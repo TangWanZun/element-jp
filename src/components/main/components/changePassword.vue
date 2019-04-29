@@ -72,11 +72,11 @@ export default {
      * 提交数据
      */
     submit() {
-      this.subLoading = true;
       if (this.form.newPsw1 !== this.form.newPsw2) {
         this.$message.error("新的密码与确认密码不一致");
         return;
       }
+      this.subLoading = true;
       this.$request({
         url: "/Login/ModifyPsw",
         data: {

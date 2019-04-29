@@ -23,7 +23,7 @@
         >
           <el-table-column type="selection" width="30" :selectable="selectable"></el-table-column>
           <!-- <el-table-column type="index" width="50"></el-table-column> -->
-          <el-table-column :show-overflow-tooltip="true" prop="Code" label="集采产品编码" width="130"></el-table-column>
+          <el-table-column :show-overflow-tooltip="true" prop="Code" label="精品编码" width="130"></el-table-column>
           <el-table-column :show-overflow-tooltip="true" prop="Name" label="精品名称" min-width="180"></el-table-column>
           <el-table-column
             :show-overflow-tooltip="true"
@@ -34,7 +34,8 @@
         </el-table>
         <el-pagination
           background
-          layout="prev, pager, next,jumper"
+          layout="total,prev, pager, next,jumper"
+          :page-size="25"
           :total="pageTotal"
           small
           @current-change="currentChange"
@@ -98,7 +99,7 @@ export default {
      * 是否隐藏上传按钮
      */
     isNoneUpload() {
-      // console.log(1,this.formData.imgUrl)
+      // //console.log(1,this.formData.imgUrl)
       // return ?true:false;
     },
     //删除行是否为禁用
@@ -112,7 +113,7 @@ export default {
      * 系统页面初始化
      */
     show({} = {}, data) {
-      console.log(data);
+      //console.log(data);
       this.meValue = true;
       //保存数据
       this.parentData = data;
@@ -127,7 +128,7 @@ export default {
       this.subLoading = true;
       getJpItem({
         page,
-        unionId: this.parentData.ContextUnionId,
+        unionId: this.parentData.ItemGroup,
         searchv: ""
       })
         .then(res => {
@@ -139,7 +140,7 @@ export default {
           for (let j = 0; j < res.List.length; j++) {
             res.List[j]._isAdd = "-";
             for (let i = 0; i < list.length; i++) {
-              if (list[i].UnionId == res.List[j].UnionId) {
+              if (list[i].DocId == res.List[j].DocId) {
                 //存在   则打上标记
                 res.List[j]._isAdd = "✔";
                 break;
@@ -169,7 +170,7 @@ export default {
      * 点击添加按钮
      */
     submit() {
-      // console.log(this.selectionLine);
+      // //console.log(this.selectionLine);
       this.$emit("on-upload", this.selectionLine);
       this.close();
     },
@@ -190,7 +191,7 @@ export default {
      */
     addItem() {
       //这里需要注意，当在此页面添加一个新的精品的时候，精品
-      //上的适配车型将自动添加本页面展示的车型
+      //上的适配车系将自动添加本页面展示的车系
       this.$refs.rightCardModal.show({});
     },
     /**

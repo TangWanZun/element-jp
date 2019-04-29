@@ -27,6 +27,7 @@
         :data="data"
         :headers="headers"
         with-credentials
+        ref="upload"
       >
         <i class="el-icon-plus upload-img-icon"></i>
       </el-upload>
@@ -92,9 +93,13 @@ export default {
      * 上传成功之后
      */
     handleAvatarSuccess(res, file) {
-      console.log(res);
+      //console.log(res);
       if(res.ErrCode==0){
         this.$emit('on-upload',res.Data)
+      }
+      if(res.ErrCode==1){
+        this.$message.error(res.ErrMsg);
+        this.$refs.upload.clearFiles();
       }
       // this.imageUrl = URL.createObjectURL(file.raw);
     },
@@ -102,15 +107,12 @@ export default {
      * 上传之前
      */
     beforeAvatarUpload(file) {
-      const isJPG = file.type === "image/jpeg";
-      const isLt2M = file.size / 1024 / 1024 < 2;
-      if (!isJPG) {
-        this.$message.error("上传头像图片只能是 JPG 格式!");
+      //console.log('fileType',file.type)
+      const isImg =( file.type.indexOf("image") >-1);
+      if (!isImg) {
+        this.$message.error("请上传图片格式文件");
       }
-      if (!isLt2M) {
-        this.$message.error("上传头像图片大小不能超过 2MB!");
-      }
-      return isJPG && isLt2M;
+      return isImg;
     }
   }
 };

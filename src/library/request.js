@@ -1,6 +1,6 @@
 import axios from "axios";
 // import qs from 'qs';
-import store from '@/store'
+// import store from '@/store'
 import { REQUEST_URL } from '@/config';
 import { Message } from 'element-ui';
 export const request = function ({
@@ -31,13 +31,13 @@ export const request = function ({
             reject(resData)
           }
         }
-        // console.log(response)
+        // //console.log(response)
       })
       .catch((error) => {
         //访问url报错，比如 404
         Message.error(error.toString())
         reject(error)
-        console.log(error)
+        //console.log(error)
       })
   })
 
@@ -46,7 +46,7 @@ export const request = function ({
 //   var mepara = {
 //     url: `/${store.state.wxId}${para.url}` || '',
 //     para: para.para ? qs.stringify(para.para) : {},
-//     success: para.success || function (response) { console.log(response) },
+//     success: para.success || function (response) { //console.log(response) },
 //     fail: para.fail || function (response) { },
 //     complete: para.complete || function (response) { },
 //     root: (typeof para.root == 'undefined') ? false : para.root,

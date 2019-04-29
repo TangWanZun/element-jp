@@ -35,7 +35,7 @@ export default {
     this.$nextTick(function() {
       // 每日小程序点击量统计
       echarts.init(document.getElementById("echarts")).setOption(mapUserCountOption);;
-	  //车型关注度
+	  //车系关注度
       echarts.init(document.getElementById("echarts3")).setOption(followOption);;
 	  //经销商关注度
 	  echarts.init(document.getElementById("echarts2")).setOption(JXSGZDoption);

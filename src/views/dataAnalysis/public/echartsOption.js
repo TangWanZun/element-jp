@@ -179,7 +179,7 @@ export const mapUserCountOption = {
  */
 export const followOption = {
     title : {
-        text: '车型关注比重',
+        text: '车系关注比重',
         subtext: '纯属虚构',
         x:'center'
     },

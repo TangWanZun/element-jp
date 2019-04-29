@@ -3,7 +3,7 @@
     <!-- 鹏龙经销商详情 -->
     <el-dialog
       custom-class="distributorModal-dialog-class"
-      title="修改"
+      title="编辑"
       :visible.sync="meValue"
       :show-close="false"
       width="700px"
@@ -67,14 +67,14 @@
                     <el-input type="textarea" :rows="5" v-model="form.DocJson.AddressDetails"></el-input>
                   </el-form-item>
                 </div>
-              </div>
+              </div> 
             </el-form>
           </el-tab-pane>
         </el-tabs>
       </div>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="close">取 消</el-button>
         <el-button :loading="submitLoad" type="primary" @click="submit">保 存</el-button>
+        <el-button @click="close">取 消</el-button>
       </span>
     </el-dialog>
   </div>
@@ -153,7 +153,7 @@ export default {
         this.addState = false;
         //赋值数据
         this.form.DocJson = data;
-        this.form.DocId = data.UnionId;
+        this.form.DocId = data.DocId;
         this.form.UnionGuid = data.UnionGuid;
         this.form.UnionGuidTemp = guid;
       }
@@ -175,14 +175,14 @@ export default {
      * 页面保存
      */
     submit() {
-      // console.log(this.form);
+      // //console.log(this.form);
       this.submitLoad = true;
       this.$request({
         url: "/DoAction/Submit",
         data: this.form
       })
         .then(res => {
-          // console.log("res", res);
+          // //console.log("res", res);
           this.$emit("on-upload", res);
           this.close();
         })
@@ -196,7 +196,7 @@ export default {
     addressRemote(value) {
       //启动loading
       this.selectLoading = true;
-      // console.log('检索框数据发生变化',value);
+      //console.log('检索框数据发生变化',value);
       //进行查询
       this.searchService.search(value);
     },
@@ -204,13 +204,16 @@ export default {
      *检索框获取当前选中值
      */
     addressChange(val) {
-      // console.log('检索框获取当前选中值',val)
+      //console.log('检索框获取当前选中值',val)
       // if (!val) {
       //   return;
       // }
+      if(typeof val == 'object'){
+        return
+      }
       //获取选中项信息
       let item = this.selectList[val];
-      // console.log(item)
+      // //console.log(item)
       //更新经纬度item
       this.form.DocJson.Longitude = item.latLng.lng;
       this.form.DocJson.Latitude = item.latLng.lat;
@@ -287,7 +290,7 @@ export default {
         autoExtend: true,
         //检索成功的回调函数
         complete: function(results) {
-          // console.log(results);
+          // //console.log(results);
           let list = results.detail.pois;
           for (let i = 0; i < list.length; i++) {
             list[i]._index = i;
@@ -298,7 +301,7 @@ export default {
         },
         //若服务请求失败，则运行以下函数
         error: function(error) {
-          console.log("error", error);
+          //console.log("error", error);
           //结束loading
           _this.selectLoading = false;
         }
