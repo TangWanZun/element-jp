@@ -145,7 +145,7 @@ export default {
             type: "success",
             message: "退出当前账号!"
           });
-          //清空数据
+          //运行退出
           this.$store.dispatch('user/userLoginOut');
         })
         .catch(() => {

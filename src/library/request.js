@@ -1,8 +1,9 @@
 import axios from "axios";
 // import qs from 'qs';
-// import store from '@/store'
+import store from '@/store'
 import { REQUEST_URL } from '@/config';
 import { Message } from 'element-ui';
+import { Notification } from 'element-ui';
 export const request = function ({
   //API接口链接
   url = "",
@@ -25,6 +26,15 @@ export const request = function ({
           if(resData.ErrCode==0){
             //正确情况
             resolve(resData.Data)
+          }else
+          if(resData.ErrCode==40001){
+            //表示当前登录用户已经失效需要重新登录
+            Notification.warning({
+              title:'警告',
+              message:"当前登录用户已经失效请重新登录"
+            })
+            store.dispatch('user/userLoginOut');
+            reject(resData)
           }else{
             //服务器200  但数据报错的时候
             Message.error(resData.ErrMsg)
