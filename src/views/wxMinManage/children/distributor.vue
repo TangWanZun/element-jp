@@ -23,7 +23,7 @@
         >
           <div class="item-box" :style="{'backgroundImage':'url('+imgUrl+item.ImgUrl+')'}">
             <div class="item-content">
-              <div class="item-header" @click="push(key)">
+              <div class="item-header" >
                 <div>{{item.Name}}</div>
                 <div>{{item.Phone}}</div>
                 <div>{{item.AddressDetails}}</div>
