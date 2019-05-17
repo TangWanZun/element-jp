@@ -363,7 +363,7 @@ export default {
         this.form.UnionGuid = this.data.UnionGuid;
         this.form.DocId = this.data.DocId;
       }
-      // //console.log(this.form);
+      // console.log(this.form);
       this.$request({
         url: "/DoAction/Submit",
         data: this.form
