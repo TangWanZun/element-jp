@@ -16,7 +16,12 @@
           <el-tab-pane label="基本信息" name="tabs-1">
             <el-form label-position="left" ref="form" :model="form" label-width="80px" size="mini">
               <el-form-item label="精品分类">
-                <el-select v-loading="itemGroupLoading" v-model="form.DocJson.ItemGroup" clearable placeholder="请选择">
+                <el-select
+                  v-loading="itemGroupLoading"
+                  v-model="form.DocJson.ItemGroup"
+                  clearable
+                  placeholder="请选择"
+                >
                   <el-option
                     v-for="item in baseSelectOptions"
                     :key="item.DocId"
@@ -25,18 +30,40 @@
                   ></el-option>
                 </el-select>
               </el-form-item>
-              <el-form-item label="精品图片">
+              <!-- <el-form-item label="精品图片">
                 <uploadImg :imgUrl="form.DocJson.ImgUrl" @on-upload="form.DocJson.ImgUrl=$event"></uploadImg>
+              </el-form-item>-->
+              <el-form-item label="精品编码">
+                <el-input v-model="form.DocJson.Code"></el-input>
               </el-form-item>
-              <div class="itemFlex">
-                <el-form-item label="精品编码">
-                  <el-input v-model="form.DocJson.Code"></el-input>
-                </el-form-item>
-                <el-form-item label="精品名称">
-                  <el-input v-model="form.DocJson.Name"></el-input>
-                </el-form-item>
-              </div>
+              <el-form-item label="精品名称">
+                <el-input v-model="form.DocJson.Name"></el-input>
+              </el-form-item>
             </el-form>
+          </el-tab-pane>
+          <!-- 精品图片 -->
+          <el-tab-pane label="精品图片" name="tabs-4">
+            <div style="height:250px;overflow:auto;padding-right:15px;">
+              <el-upload
+                class="upload-demo"
+                :action="uploadUrl"
+                accept="image/png,image/jpeg"
+                :file-list="imgList"
+                :on-success="handleAvatarSuccess"
+                :on-remove="deleteImage"
+                :before-upload="beforeAvatarUpload"
+                list-type="picture"
+                name="mediaFile"
+                :data="imgForData"
+                with-credentials
+                :headers="{}"
+                ref="upload"
+                multiple
+              >
+                <el-button size="small" type="primary">点击上传</el-button>
+                <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+              </el-upload>
+            </div>
           </el-tab-pane>
           <!-- 条目编辑 -->
           <el-tab-pane label="条目编辑" name="tabs-2">
@@ -73,8 +100,8 @@
           <el-tab-pane label="适配车系" name="tabs-3">
             <div v-loading="subLoading">
               <el-select
-              v-loading="carSerSelLoading"
-              filterable
+                v-loading="carSerSelLoading"
+                filterable
                 size="mini"
                 style="margin-right:10px"
                 v-model="table2Select"
@@ -90,9 +117,19 @@
                   :value="key"
                 ></el-option>
               </el-select>
-              <el-button size="mini" type="primary" @click="addButton2" :disabled="form.DocJson.IsAdapAll">增加行</el-button>
+              <el-button
+                size="mini"
+                type="primary"
+                @click="addButton2"
+                :disabled="form.DocJson.IsAdapAll"
+              >增加行</el-button>
               <!-- <el-button size="mini" type="primary" @click="addCarType" :disabled="form.DocJson.IsAdapAll">新增车系</el-button> -->
-              <el-button size="mini" type="danger" :disabled="delDisabled2||form.DocJson.IsAdapAll" @click="delButton2">删除行</el-button>
+              <el-button
+                size="mini"
+                type="danger"
+                :disabled="delDisabled2||form.DocJson.IsAdapAll"
+                @click="delButton2"
+              >删除行</el-button>
               <el-switch
                 style="margin-left:10px"
                 v-model="form.DocJson.IsAdapAll"
@@ -103,7 +140,7 @@
                 <div class="table-make" :class="{'table-make-show':form.DocJson.IsAdapAll}"></div>
                 <el-table
                   :row-class-name="rowClassName"
-                  :data="form.DocJson.List2"
+                  :data="form.DocJson.List3"
                   stripe
                   style="width: 100%"
                   height="220"
@@ -137,19 +174,24 @@
 <script>
 import Sortable from "sortablejs";
 import TableEditItem from "@/components/table-edit-item";
-import uploadImg from "@/components/upload-img";
+// import uploadImg from "@/components/upload-img";
 import cartypeModal from "../../cartypeModal.vue";
 import uuidv1 from "uuid/v1";
+import { Promise } from 'q';
+import {FILE_URL,IMG_URL} from '@/config'
+import {find} from '@/library/util'
 export default {
   name: "rightCardModal",
   components: {
     TableEditItem,
-    uploadImg,
+    // uploadImg,
     cartypeModal
   },
   props: {},
   data() {
     return {
+      uploadUrl:FILE_URL,
+      // uploadUrl:'https://jsonplaceholder.typicode.com/posts/',
       meValue: false,
       //是否添加条目
       addItemShow: false,
@@ -163,6 +205,9 @@ export default {
       carSerSelectOptions: [],
       //从外面传递进来的数据
       data: {},
+      imgForData:{
+        docType:'Dealer'
+      },
       //表单数据
       form: {
         DocType: "JpItem",
@@ -178,12 +223,16 @@ export default {
           IsAdapAll: false, //是否适配全车系
           //行信息-条目
           List1: [],
+          //行信息-精品照片
+          List2: [],
           //行信息-适车系
-          List2: []
+          List3: []
         }
       },
       //tabs当前默认的页签
       tabsValue: "tabs-1",
+      //精品照片 列表
+      imgList:[],
       //条目编辑选择的行信息
       selectionLine: [],
       //适配车i选哪个选择的行信息
@@ -191,9 +240,9 @@ export default {
       //适配车系的选择框
       table2Select: [],
       //精品分类的loading
-      itemGroupLoading:false,
+      itemGroupLoading: false,
       //车系下拉框的loading
-      carSerSelLoading:false
+      carSerSelLoading: false
     };
   },
   created() {
@@ -244,12 +293,15 @@ export default {
         this.data = data;
         this.form.DocJson = Object.assign(this.form.DocJson, data);
         //获取数据
-        Promise.all([this.getData1(), this.getData2()]).then(res => {
-          // //console.log(res);
-          this.form.DocJson.List1 = res[0].List || [];
-          this.form.DocJson.List2 = res[1].List || [];
-          this.subLoading = false;
-        });
+        Promise.all([this.getData1(), this.getData2(), this.getData3()]).then(
+          res => {
+            // //console.log(res);
+            this.form.DocJson.List1 = res[0].List || [];
+            this.form.DocJson.List3 = res[1].List || [];
+            // this.form.DocJson.List2 = res[2].List || [];
+            this.subLoading = false;
+          }
+        );
       }
     },
     /**
@@ -265,7 +317,7 @@ export default {
         }
       }).then(res => {
         this.baseSelectOptions = res.List || [];
-        this.itemGroupLoading = false
+        this.itemGroupLoading = false;
       });
     },
     /**
@@ -282,7 +334,7 @@ export default {
       }).then(res => {
         this.carSerSelectOptions = res.List || [];
         this.carSerSelLoading = false;
-      })
+      });
     },
     /**
      * 获取条目编辑信息
@@ -296,24 +348,6 @@ export default {
           DocId: this.data.DocId //精品项目主键
         }
       });
-      // return new Promise((resolve, reject) => {
-      //   this.tableLoading = true;
-      //   setTimeout(() => {
-      //     //获取条目编辑的信息
-      //     this.form.DocJson.List1 = [
-      //       {
-      //         name: "品牌(ANZ)",
-      //         info: "安之享"
-      //       },
-      //       {
-      //         name: "编码采集",
-      //         info: "JC-BB-AAS03-DNVJ"
-      //       }
-      //     ];
-      //     this.tableLoading = false;
-      //     resolve();
-      //   }, 1000);
-      // });
     },
     /**
      * 获取适配车系信息
@@ -323,24 +357,48 @@ export default {
         url: "/DoAction/GetSingleList",
         data: {
           DocType: "JpItem",
+          ActionType: "JpItem3",
+          DocId: this.data.DocId //精品项目主键
+        }
+      });
+    },
+    /**
+     * 获取精品图片子表
+     */
+    getData3() {
+      return this.$request({
+        url: "/DoAction/GetSingleList",
+        data: {
+          DocType: "JpItem",
           ActionType: "JpItem2",
           DocId: this.data.DocId //精品项目主键
         }
       });
-      return new Promise((resolve, reject) => {
-        this.table2Loading = true;
-        setTimeout(() => {
-          //获取适配车系的信息
-          for (let i = 0; i < 3; i++) {
-            this.form.DocJson.List2.push({
-              DocId: "A0" + (i + 1),
-              Name: "A系车"
-            });
+      return new Promise((resolve,reject)=>{
+        this.$request({
+          url: "/DoAction/GetSingleList",
+          data: {
+            DocType: "JpItem",
+            ActionType: "JpItem2",
+            DocId: this.data.DocId //精品项目主键
           }
-          this.table2Loading = false;
-          resolve();
-        }, 1000);
-      });
+        })
+          .then((res)=>{
+            //这里还需要将获取的精品图片的数据  修改一下
+            let imgList = [];
+            for(let item of res){
+              imgList.push({
+                name:item.LineId,
+                url:IMG_URL+item.ImgUrl
+              })
+            }
+            this.imgList = imgList;
+            resolve(res);
+          })
+          .catch(error=>{
+            reject(error)
+          })
+      })
     },
     /**
      * 页面关闭
@@ -363,10 +421,20 @@ export default {
         this.form.UnionGuid = this.data.UnionGuid;
         this.form.DocId = this.data.DocId;
       }
+      //将精品图片转化成可以上传的
+      let imgList = this.imgList;
+      let List2 = [];
+      for(let i in imgList){
+        List2.push({
+          LineId:i,
+          ImgUrl:imgList[i]._url
+        })
+      }
+      this.form.DocJson.List2 = List2;
       // console.log(this.form);
       this.$request({
         url: "/DoAction/Submit",
-        data: this.form
+        data:this.form
       })
         .then(res => {
           this.$emit("on-upload", res);
@@ -411,7 +479,7 @@ export default {
       // //console.log(this.table2Select);
       //将数据添加到表中
       let arr = this.table2Select;
-      let list = this.form.DocJson.List2;
+      let list = this.form.DocJson.List3;
       for (let i = 0; i < arr.length; i++) {
         let item = this.carSerSelectOptions[arr[i]];
         //这里需要进行数据去重
@@ -446,7 +514,7 @@ export default {
      */
     delButton2() {
       for (let i = this.selectionLine2.length - 1; i >= 0; i--) {
-        this.form.DocJson.List2.splice(this.selectionLine2[i].LineId, 1);
+        this.form.DocJson.List3.splice(this.selectionLine2[i].LineId, 1);
       }
     },
     //行拖拽
@@ -467,6 +535,41 @@ export default {
      */
     tableEditItemChange({ scope, value }) {
       this.form.DocJson.List1[scope.$index][scope.column.property] = value;
+    },
+     /**
+     * 上传成功之后
+     */
+    handleAvatarSuccess(res, file,fileList) {
+      if(res.ErrCode==0){
+        let index =  find(fileList,'uid',file.uid); 
+        fileList[index]._url=res.Data
+        //添加一个图片
+          console.log('图片添加',fileList)
+         this.imgList = fileList;
+        // this.form.List2.push(res)
+      }
+      if(res.ErrCode==1){
+        this.$message.error(res.ErrMsg);
+        this.$refs.upload.clearFiles();
+      }
+      // this.imageUrl = URL.createObjectURL(file.raw);
+    },
+    /**
+     * 删除列表中的图片
+     */
+    deleteImage(file, fileList){
+      console.log('图片删除',fileList)
+      this.imgList = fileList;
+    },
+    /**
+     * 上传之前
+     */
+    beforeAvatarUpload(file) {
+      const isImg =( file.type.indexOf("image") >-1);
+      if (!isImg) {
+        this.$message.error("请上传图片格式文件");
+      }
+      return isImg;
     }
   }
 };
@@ -494,19 +597,19 @@ export default {
   height: 310px;
 }
 //添加适配车系  对表格的禁止修改
-.table-body{
+.table-body {
   position: relative;
-  .table-make{
+  .table-make {
     position: absolute;
-    top:0px;
-    left:0px;
-    width:100%;
+    top: 0px;
+    left: 0px;
+    width: 100%;
     // height: 100%;
     background-color: rgba(255, 255, 255, 0.8);
     z-index: 2;
     transition: 0.1s;
   }
-  .table-make-show{
+  .table-make-show {
     height: 100%;
   }
 }
