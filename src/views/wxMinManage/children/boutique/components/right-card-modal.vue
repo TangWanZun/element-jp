@@ -218,7 +218,7 @@ export default {
           Code: "", //集采编码
           //标题信息
           Name: "",
-          ImgUrl: "",
+          // ImgUrl: "",
           ItemGroup: "", //精品分类的主键
           IsAdapAll: false, //是否适配全车系
           //行信息-条目
@@ -366,16 +366,17 @@ export default {
      * 获取精品图片子表
      */
     getData3() {
-      return this.$request({
-        url: "/DoAction/GetSingleList",
-        data: {
-          DocType: "JpItem",
-          ActionType: "JpItem2",
-          DocId: this.data.DocId //精品项目主键
-        }
-      });
+
+      // return this.$request({
+      //   url: "/DoAction/GetSingleList",
+      //   data: {
+      //     DocType: "JpItem",
+      //     ActionType: "JpItem2",
+      //     DocId: this.data.DocId //精品项目主键
+      //   }
+      // });
       return new Promise((resolve,reject)=>{
-        this.$request({
+        this.$request({ 
           url: "/DoAction/GetSingleList",
           data: {
             DocType: "JpItem",
@@ -386,14 +387,15 @@ export default {
           .then((res)=>{
             //这里还需要将获取的精品图片的数据  修改一下
             let imgList = [];
-            for(let item of res){
+            for(let item of res.List){
               imgList.push({
                 name:item.LineId,
-                url:IMG_URL+item.ImgUrl
+                url:IMG_URL+item.ImgUrl,
+                _url:item.ImgUrl
               })
             }
             this.imgList = imgList;
-            resolve(res);
+            resolve(res.List);
           })
           .catch(error=>{
             reject(error)
@@ -544,7 +546,7 @@ export default {
         let index =  find(fileList,'uid',file.uid); 
         fileList[index]._url=res.Data
         //添加一个图片
-          console.log('图片添加',fileList)
+          // console.log('图片添加',fileList)
          this.imgList = fileList;
         // this.form.List2.push(res)
       }
@@ -558,7 +560,7 @@ export default {
      * 删除列表中的图片
      */
     deleteImage(file, fileList){
-      console.log('图片删除',fileList)
+      // console.log('图片删除',fileList)
       this.imgList = fileList;
     },
     /**
