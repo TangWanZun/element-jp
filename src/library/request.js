@@ -7,7 +7,9 @@ import { Notification } from 'element-ui';
 export const request = function ({
   //API接口链接
   url = "",
-  data = {}
+  data = {},
+  //当出现问题时候是否展示错误的信息
+  isErrorShow=true
 } = {}) {
   return new Promise((resolve, reject) => {
     axios({
@@ -29,15 +31,17 @@ export const request = function ({
           }else
           if(resData.ErrCode==40001){
             //表示当前登录用户已经失效需要重新登录
-            Notification.warning({
-              title:'警告',
-              message:"当前登录用户已经失效请重新登录"
-            })
+            if(isErrorShow){
+              Notification.warning({
+                title:'警告',
+                message:"当前登录用户已经失效请重新登录"
+              })
+            }
             store.dispatch('user/userLoginOut');
             reject(resData)
           }else{
             //服务器200  但数据报错的时候
-            Message.error(resData.ErrMsg)
+            if(isErrorShow)Message.error(resData.ErrMsg)
             reject(resData)
           }
         }
@@ -45,7 +49,7 @@ export const request = function ({
       })
       .catch((error) => {
         //访问url报错，比如 404
-        Message.error(error.toString())
+        if(isErrorShow)Message.error(error.toString())
         reject(error)
         //console.log(error)
       })

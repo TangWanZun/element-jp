@@ -123,7 +123,7 @@ export default {
         }
       })
         .then(res => {
-          // //console.log(res);
+          //console.log(res);
           //获取数据列表
           this.tableData = res.List || [];
           //获取总记录条数
