@@ -15,7 +15,7 @@
           <el-tab-pane label="基本信息" name="tabs-1">
             <el-form label-position="left" ref="form" :model="form" label-width="90px" size="mini">
               <el-form-item label="经销商图片">
-                <uploadImg @on-upload=" form.DocJson.ImgUrl=$event"  :imgUrl="form.DocJson.ImgUrl"></uploadImg>
+                <uploadImg @on-upload=" form.DocJson.ImgUrl=$event" :imgUrl="form.DocJson.ImgUrl"></uploadImg>
               </el-form-item>
               <el-form-item label="经销商名称">
                 <el-input v-model="form.DocJson.Name"></el-input>
@@ -23,10 +23,13 @@
               <el-form-item label="经销商电话">
                 <el-input type="number" v-model="form.DocJson.Phone"></el-input>
               </el-form-item>
-              <el-form-item label="门店介绍">
+              <!-- <el-form-item label="门店介绍">
                 <el-input type="textarea" v-model="form.DocJson.Descript"></el-input>
-              </el-form-item>
+              </el-form-item>-->
             </el-form>
+          </el-tab-pane>
+          <el-tab-pane label="门店介绍" name="tabs-3">
+            <div id="wangEditor"></div>
           </el-tab-pane>
           <el-tab-pane label="地理位置" name="tabs-2">
             <el-form label-position="left" ref="form" :model="form" label-width="80px" size="mini">
@@ -67,7 +70,7 @@
                     <el-input type="textarea" :rows="5" v-model="form.DocJson.AddressDetails"></el-input>
                   </el-form-item>
                 </div>
-              </div> 
+              </div>
             </el-form>
           </el-tab-pane>
         </el-tabs>
@@ -83,6 +86,8 @@
 <script>
 import uuidv1 from "uuid/v1";
 import uploadImg from "@/components/upload-img";
+import { FILE_URL, IMG_URL } from "@/config";
+import wangeditor from "wangeditor";
 export default {
   name: "distributorModal",
   props: {},
@@ -109,7 +114,7 @@ export default {
         DocJson: {
           Name: "", //名称
           Descript: "", //门店介绍
-          ImgUrl:"", //图片
+          ImgUrl: "", //图片
           Phone: "", //电话
           Longitude: "", //经度
           Latitude: "", //纬度
@@ -121,8 +126,11 @@ export default {
       selectList: [],
       //索引地址loading
       selectLoading: false,
+      //编辑器
+      editor: {},
       //地图
       txMap: {},
+
       //地图覆盖物
       marker: {},
       //检索服务实例
@@ -131,9 +139,6 @@ export default {
       addState: true
     };
   },
-  // created() {
-  //   this.show();
-  // },
   methods: {
     /**
      * 页面开启
@@ -158,6 +163,8 @@ export default {
         this.form.UnionGuidTemp = guid;
       }
       this.$nextTick(() => {
+        //创建富文本编辑器
+        this.createEditor();
         //创建腾讯地图
         this.createMap();
         //创建检索系统
@@ -175,7 +182,10 @@ export default {
      * 页面保存
      */
     submit() {
-      // //console.log(this.form);
+      //将编辑器的内容添加到页面重
+      let data = Object.assign(this.form.DocJson, {
+        Descript: this.editor.txt.html()
+      });
       this.submitLoad = true;
       this.$request({
         url: "/DoAction/Submit",
@@ -208,8 +218,8 @@ export default {
       // if (!val) {
       //   return;
       // }
-      if(typeof val == 'object'){
-        return
+      if (typeof val == "object") {
+        return;
       }
       //获取选中项信息
       let item = this.selectList[val];
@@ -227,13 +237,45 @@ export default {
       this.txMap.setCenter(item.latLng);
     },
     /**
+     * 创建富文本编辑器
+     */
+    createEditor() {
+      //首先清除之前的文本编辑器
+      document.querySelector("#wangEditor").innerHTML = "";
+      //创建编辑器
+      this.editor = new wangeditor("#wangEditor");
+      //开启debug模式
+      this.editor.customConfig.debug = true;
+      // 配置服务器端地址
+      this.editor.customConfig.uploadImgServer = FILE_URL;
+      //添加自定义参数
+      this.editor.customConfig.uploadImgParams = {
+        docType:'Dealer'
+      };
+      //上传图片的配置
+      this.editor.customConfig.uploadImgHooks = {
+        //自定义上传图片
+        customInsert: function(insertImg, result, editor) {
+          console.log(result);
+          // insertImg 是插入图片的函数，editor 是编辑器对象，result 是服务器端返回的结果
+          // 举例：假如上传图片成功后，服务器端返回的是 {url:'....'} 这种格式，即可这样插入图片：
+          // var url = result.url;
+          insertImg(IMG_URL+result.Data);
+          // result 必须是一个 JSON 格式字符串！！！否则报错
+        }
+      };
+      this.editor.create();
+      //对富文本编辑器进行赋值
+      this.editor.txt.html(this.form.DocJson.Descript);
+    },
+    /**
      * 创建腾讯地图
      */
     createMap() {
       var _this = this;
       //1.创建坐标  为天安门
-      let lng = this.form.DocJson.Longitude||116.397128;
-      let lat = this.form.DocJson.Latitude||39.916527;
+      let lng = this.form.DocJson.Longitude || 116.397128;
+      let lat = this.form.DocJson.Latitude || 39.916527;
       //获取放置地图的dom
       var mapDom = document.querySelector("#containermap");
       //创建一个坐标
