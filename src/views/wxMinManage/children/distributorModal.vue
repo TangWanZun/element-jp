@@ -21,7 +21,7 @@
                 <el-input v-model="form.DocJson.Name"></el-input>
               </el-form-item>
               <el-form-item label="经销商电话">
-                <el-input type="number" v-model="form.DocJson.Phone"></el-input>
+                <el-input  v-model="form.DocJson.Phone"></el-input>
               </el-form-item>
               <el-form-item label="门店介绍">
                 <el-input type="textarea" v-model="form.DocJson.Descript"></el-input>
