@@ -23,14 +23,14 @@
               <el-form-item label="经销商电话">
                 <el-input type="number" v-model="form.DocJson.Phone"></el-input>
               </el-form-item>
-              <!-- <el-form-item label="门店介绍">
+              <el-form-item label="门店介绍">
                 <el-input type="textarea" v-model="form.DocJson.Descript"></el-input>
-              </el-form-item>-->
+              </el-form-item>
             </el-form>
           </el-tab-pane>
-          <el-tab-pane label="门店介绍" name="tabs-3">
+          <!-- <el-tab-pane label="门店介绍" name="tabs-3">
             <div id="wangEditor"></div>
-          </el-tab-pane>
+          </el-tab-pane> -->
           <el-tab-pane label="地理位置" name="tabs-2">
             <el-form label-position="left" ref="form" :model="form" label-width="80px" size="mini">
               <el-form-item label="检索地址">
@@ -164,7 +164,7 @@ export default {
       }
       this.$nextTick(() => {
         //创建富文本编辑器
-        this.createEditor();
+        // this.createEditor();
         //创建腾讯地图
         this.createMap();
         //创建检索系统
@@ -183,9 +183,9 @@ export default {
      */
     submit() {
       //将编辑器的内容添加到页面重
-      let data = Object.assign(this.form.DocJson, {
-        Descript: this.editor.txt.html()
-      });
+      // let data = Object.assign(this.form.DocJson, {
+      //   Descript: this.editor.txt.html()
+      // });
       this.submitLoad = true;
       this.$request({
         url: "/DoAction/Submit",
