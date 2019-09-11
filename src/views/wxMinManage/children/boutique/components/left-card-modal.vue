@@ -41,6 +41,7 @@ export default {
   props: {},
   data() {
     return {
+        isUpdate:null,
       meValue: false,
       //是否为增加
       isAddState:false,
@@ -61,7 +62,8 @@ export default {
      * 显示
      * 系统页面初始化
      */
-    show({}={},data) {
+    show({}={},data,update) {
+        this.isUpdate = update;
       // //console.log(data);
       if(!data){
         this.isAddState = true;
@@ -70,7 +72,7 @@ export default {
         this.isAddState = false;
         this.form.DocJson = data;
         this.form.UnionGuid = data.UnionGuid;
-        this.form.DocId = data.DocId;
+        this.form.Id = data.Id;
       }
       this.meValue = true;
     },
@@ -81,13 +83,18 @@ export default {
       let guid = uuidv1();
       this.form.UnionGuidTemp = guid;
       this.form.UnionGuid =this.form.UnionGuid||guid;
+        let url = this.isUpdate ? "/ItemGroup/Update" : "/ItemGroup/Add";
+        if(this.isUpdate){
+            this.form.DocJson.UnionGuidTemp = uuidv1()
+        }
       this.$request({
-        url: "/DoAction/Submit",
-        data: this.form
+        url: url,
+        data: this.form.DocJson
       })
-        .then((res)=>{
+        .then(res =>{
+            console.log(res);
           this.$emit('on-upload',{
-            DocId:res.DocId,
+            Id:this.form.Id,
             Name:this.form.DocJson.Name,
             UnionGuid:this.form.UnionGuid
           })

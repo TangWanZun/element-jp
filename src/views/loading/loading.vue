@@ -54,7 +54,8 @@ export default {
         password:this.formData.inputPassword
       })
         .then(()=>{
-          // 判断是否勾选的记住密码
+            console.log(this.$store);
+            // 判断是否勾选的记住密码
           if(this.checked){
             //是  ，保存用户名和密码
             this.$store.commit('user/setUser',{

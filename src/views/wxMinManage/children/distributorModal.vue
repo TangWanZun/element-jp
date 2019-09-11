@@ -15,16 +15,16 @@
           <el-tab-pane label="基本信息" name="tabs-1">
             <el-form label-position="left" ref="form" :model="form" label-width="90px" size="mini">
               <el-form-item label="经销商图片">
-                <uploadImg @on-upload=" form.DocJson.ImgUrl=$event" :imgUrl="form.DocJson.ImgUrl"></uploadImg>
+                <uploadImg @on-upload=" form.ImgUrl=$event" :imgUrl="form.ImgUrl" doc-type="Dealer"></uploadImg>
               </el-form-item>
               <el-form-item label="经销商名称">
-                <el-input v-model="form.DocJson.Name"></el-input>
+                <el-input v-model="form.Name"></el-input>
               </el-form-item>
               <el-form-item label="经销商电话">
-                <el-input  v-model="form.DocJson.Phone"></el-input>
+                <el-input  v-model="form.Phone"></el-input>
               </el-form-item>
               <el-form-item label="门店介绍">
-                <el-input type="textarea" v-model="form.DocJson.Descript"></el-input>
+                <el-input type="textarea" v-model="form.Descript"></el-input>
               </el-form-item>
             </el-form>
           </el-tab-pane>
@@ -36,7 +36,7 @@
               <el-form-item label="检索地址">
                 <!-- <el-input v-model="form.address" @change="addressChange"></el-input> -->
                 <el-select
-                  v-model="form.DocJson.AddressName"
+                  v-model="form.AddressName"
                   placeholder="请填写经销商位置"
                   style="width:100%"
                   :filterable="true"
@@ -61,13 +61,13 @@
                 <div class="address-map" id="containermap"></div>
                 <div>
                   <el-form-item label="经度" label-width="50px">
-                    <el-input v-model="form.DocJson.Longitude" disabled></el-input>
+                    <el-input v-model="form.Longitude" disabled></el-input>
                   </el-form-item>
                   <el-form-item label="纬度" label-width="50px">
-                    <el-input v-model="form.DocJson.Latitude" disabled></el-input>
+                    <el-input v-model="form.Latitude" disabled></el-input>
                   </el-form-item>
                   <el-form-item label="详细地址" label-width="50px">
-                    <el-input type="textarea" :rows="5" v-model="form.DocJson.AddressDetails"></el-input>
+                    <el-input type="textarea" :rows="5" v-model="form.AddressDetails"></el-input>
                   </el-form-item>
                 </div>
               </div>
@@ -96,6 +96,7 @@ export default {
   },
   data() {
     return {
+        isUpdate:null,
       meValue: this.value,
       //按钮是否在上传中
       submitLoad: false,
@@ -107,11 +108,6 @@ export default {
       tabs: "tabs-1",
       //表单数据
       form: {
-        DocType: "Dealer",
-        ActionType: "AddOrUpdate",
-        UnionGuid: "",
-        UnionGuidTemp: "",
-        DocJson: {
           Name: "", //名称
           Descript: "", //门店介绍
           ImgUrl: "", //图片
@@ -119,8 +115,10 @@ export default {
           Longitude: "", //经度
           Latitude: "", //纬度
           AddressName: "", //地址简称
-          AddressDetails: "" //地址详情
-        }
+          AddressDetails: "" ,//地址详情
+          Id:"",
+          UnionGuid:"",
+          UnionGuidTemp:""
       },
       //索引地址列表
       selectList: [],
@@ -143,8 +141,9 @@ export default {
     /**
      * 页面开启
      */
-    show(data) {
+    show(data,update) {
       this.meValue = true;
+      this.isUpdate = update;
       //产生一个GUID
       let guid = uuidv1();
       //判断是新增还是修改
@@ -157,10 +156,7 @@ export default {
         //修改
         this.addState = false;
         //赋值数据
-        this.form.DocJson = data;
-        this.form.DocId = data.DocId;
-        this.form.UnionGuid = data.UnionGuid;
-        this.form.UnionGuidTemp = guid;
+        this.form = data;
       }
       this.$nextTick(() => {
         //创建富文本编辑器
@@ -187,8 +183,12 @@ export default {
       //   Descript: this.editor.txt.html()
       // });
       this.submitLoad = true;
+      let url = this.isUpdate ? "/Dealer/Update" : "/Dealer/Add";
+      if(this.isUpdate){
+          this.form.UnionGuidTemp = uuidv1()
+      }
       this.$request({
-        url: "/DoAction/Submit",
+        url: url,
         data: this.form
       })
         .then(res => {
@@ -225,12 +225,12 @@ export default {
       let item = this.selectList[val];
       // //console.log(item)
       //更新经纬度item
-      this.form.DocJson.Longitude = item.latLng.lng;
-      this.form.DocJson.Latitude = item.latLng.lat;
+      this.form.Longitude = item.latLng.lng;
+      this.form.Latitude = item.latLng.lat;
       //更新详细地址
-      this.form.DocJson.AddressDetails = item.address + item.name;
+      this.form.AddressDetails = item.address + item.name;
       //更新简单地址
-      this.form.DocJson.AddressName = item.name;
+      this.form.AddressName = item.name;
       //修改当前覆盖点的位置
       this.marker.setPosition(item.latLng);
       //更改地图中间位置
@@ -274,8 +274,8 @@ export default {
     createMap() {
       var _this = this;
       //1.创建坐标  为天安门
-      let lng = this.form.DocJson.Longitude || 116.397128;
-      let lat = this.form.DocJson.Latitude || 39.916527;
+      let lng = this.form.Longitude || 116.397128;
+      let lat = this.form.Latitude || 39.916527;
       //获取放置地图的dom
       var mapDom = document.querySelector("#containermap");
       //创建一个坐标
@@ -292,8 +292,8 @@ export default {
         //修改当前覆盖点的位置
         _this.marker.setPosition(event.latLng);
         //将经纬度赋值为input
-        _this.form.DocJson.Longitude = event.latLng.lng;
-        _this.form.DocJson.Latitude = event.latLng.lat;
+        _this.form.Longitude = event.latLng.lng;
+        _this.form.Latitude = event.latLng.lat;
       });
       //4.创建一个覆盖物到当前天安门点
       this.marker = new qq.maps.Marker({
@@ -309,8 +309,8 @@ export default {
         //修改当前覆盖点的位置
         _this.marker.setPosition(event.latLng);
         //将经纬度赋值为input
-        _this.form.DocJson.Longitude = event.latLng.lng;
-        _this.form.DocJson.Latitude = event.latLng.lat;
+        _this.form.Longitude = event.latLng.lng;
+        _this.form.Latitude = event.latLng.lat;
       });
     },
     /**

@@ -96,7 +96,8 @@ export default {
       this.tableData.length = 1;
       getItemGroup()
         .then(res => {
-          this.tableData = this.tableData.concat(res.List || []);
+           // console.log(res);
+          this.tableData = this.tableData.concat(res || []);
           //是否刷新右侧数据
           if (refreshRight) this.$emit("on-upload", res);
           // this.pageTotal = res.Total||0;
@@ -146,6 +147,7 @@ export default {
       })
         .then(() => {
           delData({
+            url:"/ItemGroup/Delete",
             docType: "ItemGroup",
             list: this.selectionLine
           }).finally(res => {
@@ -168,7 +170,8 @@ export default {
     rowDblclick(row, column, event) {
       //当点击为全部的时候，是无法打开修改的
       if (row._index == 0) return;
-      this.$refs.leftCardModal.show({}, Object.assign({}, row));
+      console.log(row);
+      this.$refs.leftCardModal.show({}, Object.assign({}, row),true);
     },
     /**
      * 当分页的页码改变的时候

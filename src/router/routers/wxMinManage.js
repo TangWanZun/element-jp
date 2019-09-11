@@ -29,7 +29,15 @@ export default [
 						path: 'distributor',
 						name: '经销商管理',
 						component: r => require.ensure([], () => r(require('@/views/wxMinManage/children/distributor')), 'distributor'),
-					}
+					},{
+                        path: 'carousel',
+                        name: '轮播图管理',
+                        component:r => require.ensure([], () => r(require('@/views/wxMinManage/children/carousel')), 'carousel'),
+                    },{
+                        path: 'user',
+                        name: '用户管理',
+                        component:r => require.ensure([], () => r(require('@/views/wxMinManage/children/user')), 'user'),
+                    }
 				]
 			},
 			{

@@ -19,7 +19,7 @@ export const getJpItem = function ({
 	//页数
 	page = 1,
 	//精品分类的id
-	unionId = '',
+	Id = 0,
 	//查询数据
 	searchv = ''
 } = {}) {
@@ -29,7 +29,7 @@ export const getJpItem = function ({
 			DocType: "JpItem",
 			Start: (page - 1) * 25,
 			Limit: 25,
-			p1: unionId,
+			Id: Id,
 			Searchv: searchv
 		}
 	})

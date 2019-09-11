@@ -25,23 +25,23 @@ export const request = function ({
       .then((response) => {
         let resData = response.data;
         if(response.status==200){
-          if(resData.ErrCode==0){
+          if(resData.Code==0){
             //正确情况
             resolve(resData.Data)
           }else
-          if(resData.ErrCode==40001){
+          if(resData.Code==="40001"){
             //表示当前登录用户已经失效需要重新登录
-            if(isErrorShow){
+            /*if(isErrorShow){
               Notification.warning({
                 title:'警告',
                 message:"当前登录用户已经失效请重新登录"
               })
-            }
-            store.dispatch('user/userLoginOut');
+            }*/
+            this.$router.push("/Loading/index");
             reject(resData)
           }else{
             //服务器200  但数据报错的时候
-            if(isErrorShow)Message.error(resData.ErrMsg)
+            if(isErrorShow)Message.error(resData.Msg)
             reject(resData)
           }
         }

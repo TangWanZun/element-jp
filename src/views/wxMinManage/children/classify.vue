@@ -93,7 +93,7 @@
         </div>
 
         <el-card class="box-card-add" shadow="hover" :class="{'box-card-add-show':isAddText}">
-          <div class="box-card-add-text" v-if="!isAddText" @click="isAddText=true">新建精品分类</div>
+          <div class="box-card-add-text" v-if="!isAddText" @click="isAddText=true">添加精品分类</div>
           <div v-else>
             <div>
               <el-select v-model="classifyIndex" placeholder="请选择">
@@ -172,9 +172,9 @@ export default {
       this.$request({
         url: "/DoAction/GetMainSubList",
         data: {
-          DocType: "CarSer",
+          DocType: "CarSerJpItem",
           ActionType: "JpItemGroup",
-          DocId: this.parentData.DocId //车系主键
+          Id: this.parentData.Id //车系主键
         }
       })
         .then(res => {
@@ -202,7 +202,7 @@ export default {
       getItemGroup().then(res => {
         //这里需要进行去重
         this.classOptions =
-          arrUnique(res.List, this.dataList, "DocId", "ItemGroup") || [];
+          arrUnique(res, this.dataList, "DocId", "ItemGroup") || [];
       });
     },
     /**
@@ -224,7 +224,7 @@ export default {
       //console.log(res);
       //自动赋值
       this.classifySend({
-        DocId: res.DocId,
+        Id: res.Id,
         ItemGroupName: res.Name,
         UnionGuid: res.UnionGuid
       });
@@ -262,8 +262,10 @@ export default {
      * 添加精品
      */
     cardAddButton(key) {
+        console.log(key);
       this.singInIndex = key;
-      this.$refs.classifyModal.show({}, Object.assign({}, this.dataList[key]));
+        console.log(this.dataList[key]);
+        this.$refs.classifyModal.show({}, Object.assign({}, this.dataList[key]));
     },
     /**
      * 添加精品回调
@@ -358,16 +360,14 @@ export default {
       //     }
       // })
       this.$request({
-        url: "/DoAction/Submit",
+        url: "/CarSerJpItem/Save",
         data: {
-          DocType: "CarSerJpItem",
-          ActionType: "AddOrUpdate",
-          DocId: this.parentData.DocId,
-          UnionGuid: meGuid,
-          UnionGuidTemp: guid,
-          DocJson: {
-            List: itemList
-          }
+          /*DocType: "CarSerJpItem",
+          ActionType: "AddOrUpdate",*/
+          Id: this.parentData.Id,
+          /*UnionGuid: meGuid,
+          UnionGuidTemp: guid,*/
+          JpItem:itemList
         }
       })
         .then(res => {

@@ -1,5 +1,5 @@
 <template>
-  <div v-loading="loading">
+  <div>
     <router-view/>
   </div>
 </template>
@@ -9,22 +9,11 @@ export default {
   name: "App",
   data() {
     return {
-      loading: true
+
     };
   },
   created() {
-    //获取当前是否已经登录
-    this.$request({
-      url: "/Login/AccessLogin",
-      isErrorShow:false
-    })
-      .then(reponse => {
-        //保存令牌
-        this.$store.commit("user/setRsid", reponse);
-      })
-      .finally(() => {
-        this.loading = false;
-      });
+
   }
 };
 </script>

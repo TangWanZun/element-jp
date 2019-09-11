@@ -128,7 +128,7 @@ export default {
       this.subLoading = true;
       getJpItem({
         page,
-        unionId: this.parentData.ItemGroup,
+        Id: this.parentData.ItemGroupId,
         searchv: ""
       })
         .then(res => {

@@ -18,7 +18,7 @@
       <el-upload
         v-else
         :action="uploadUrl"
-         accept="image/png,image/jpeg"
+         accept="image/png,image/jpeg,mp4"
         list-type="picture-card"
         :on-success="handleAvatarSuccess"
         :before-remove="deleteImage"
@@ -45,6 +45,10 @@ import {FILE_URL,IMG_URL} from '@/config'
 export default {
   name: "uploadImg",
   props: {
+      docType:{
+          type:String,
+          default:""
+      },
     imgUrl: {
       type: String,
       default:''
@@ -63,7 +67,7 @@ export default {
       },
       //上传附带的额外参数
       data:{
-        docType:'Dealer'
+        docType:this.docType
       }
     };
   },
@@ -94,11 +98,11 @@ export default {
      */
     handleAvatarSuccess(res, file) {
       //console.log(res);
-      if(res.ErrCode==0){
+      if(res.Code=="0"){
         this.$emit('on-upload',res.Data)
       }
-      if(res.ErrCode==1){
-        this.$message.error(res.ErrMsg);
+      if(res.Code=="1"){
+        this.$message.error(res.Msg);
         this.$refs.upload.clearFiles();
       }
       // this.imageUrl = URL.createObjectURL(file.raw);
@@ -108,7 +112,7 @@ export default {
      */
     beforeAvatarUpload(file) {
       //console.log('fileType',file.type)
-      const isImg =( file.type.indexOf("image") >-1);
+      const isImg =( file.type.indexOf("image") >-1||file.type.indexOf("mp4") >-1);
       if (!isImg) {
         this.$message.error("请上传图片格式文件");
       }

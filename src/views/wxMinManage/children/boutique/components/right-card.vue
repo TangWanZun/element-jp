@@ -10,7 +10,7 @@
           style="width:200px;margin-right:10px"
           @keyup.native.enter="getData"
         ></el-input>
-        <el-button type="primary" size="small" icon="el-icon-search" circle @click="getData"></el-button>
+        <el-button type="primary" size="small" icon="el-icon-search" circle @click="getData(1)"></el-button>
         <el-button type="primary" size="small" @click="addButton">新增</el-button>
         <el-button type="danger" size="small" :disabled="delDisabled" @click="delButton">删除</el-button>
       </template>
@@ -116,7 +116,7 @@ export default {
       // })
       getJpItem({
         page,
-        unionId: this.data.DocId,
+        Id: this.data.Id,
         searchv: this.searchInput
       })
         .then(res => {
@@ -178,6 +178,7 @@ export default {
       })
         .then(() => {
           delData({
+              url:"/JpItem/Delete",
             docType: "JpItem",
             list: this.selectionLine
           }).finally(res => {

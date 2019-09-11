@@ -9,7 +9,7 @@
           style="width:200px;margin-right:10px"
           @keyup.native.enter="getData"
         ></el-input>
-        <el-button type="primary" size="small" icon="el-icon-search" circle @click="getData"></el-button>
+        <el-button type="primary" size="small" icon="el-icon-search" circle @click="getData(1)"></el-button>
         <el-button type="primary" size="small" @click="addButton">新增</el-button>
         <!-- <el-button type="danger" size="small" :disabled="delDisabled" @click="delButton">删除</el-button> -->
       </template>
@@ -123,7 +123,7 @@ export default {
         }
       })
         .then(res => {
-          //console.log(res);
+          console.log(res);
           //获取数据列表
           this.tableData = res.List || [];
           //获取总记录条数
@@ -170,7 +170,7 @@ export default {
             docType: "Dealer",
             list: [this.tableData[key]]
           }).finally(res => {
-            this.getData();
+            this.getData(1);
           });
         })
     },
@@ -178,7 +178,7 @@ export default {
      * 双击行信息的时候
      */
     rowDblclick(key) {
-      this.$refs.distributorModal.show(Object.assign({}, this.tableData[key]));
+      this.$refs.distributorModal.show(Object.assign({}, this.tableData[key]),true);
     },
     /**
      * 当分页的页码改变的时候

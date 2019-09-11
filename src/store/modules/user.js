@@ -1,9 +1,11 @@
 import { login,loginOut } from '@/api/user'
 import router from '@/router/index'
+import vm from "vue"
 
 export default {
 	namespaced: true,
 	state: {
+	    isLogin:false,
 		//当前用户登录的令牌
 		rsid: '',
 		//用于保存用户名和密码
@@ -15,8 +17,8 @@ export default {
 		}
 	},
 	mutations: {
-		setRsid(state, data) {
-			state.rsid = data
+		isLogin(state, isLogin) {
+			state.isLogin = isLogin
 		},
 		setUser(state,{userName,password,checked}){
 			state.user.userName = userName;
@@ -35,7 +37,7 @@ export default {
 					password
 				})
 					.then((res)=>{
-						commit('setRsid',res);
+						commit('isLogin',true);
 						resolve()
 					})
 					.catch((error)=>{
@@ -46,11 +48,12 @@ export default {
 		/**
 		 * 退出登录
 		 */
-		userLoginOut({commit}){
-			commit('setRsid','');
-			loginOut()
+		userLoginOut({ commit }){
+			commit('isLogin',false);
+            console.log(this.state.user.isLogin);
+            loginOut()
 				.then(()=>{
-					router.replace('/Loading/index')
+                    router.replace('/Loading/index')
 				})
 		}
 	}

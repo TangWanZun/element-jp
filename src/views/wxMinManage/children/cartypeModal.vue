@@ -13,7 +13,7 @@
       <div class="dialog-body">
         <el-form label-position="left" ref="form" :model="form" label-width="80px" size="mini">
           <el-form-item label="车系图片">
-            <uploadImg :imgUrl="form.DocJson.ImgUrl" @on-upload="form.DocJson.ImgUrl=$event"></uploadImg>
+            <uploadImg :imgUrl="form.DocJson.ImgUrl" @on-upload="form.DocJson.ImgUrl=$event" doc-type="CarSer"></uploadImg>
           </el-form-item>
           <el-form-item label="车系名称">
             <el-input v-model="form.DocJson.Name"></el-input>
@@ -41,6 +41,7 @@ export default {
   props: {},
   data() {
     return {
+        isUpdate:null,
       meValue: false,
       //是否为添加数据状态
       addState:true,
@@ -64,7 +65,8 @@ export default {
      * 显示
      * 系统页面初始化
      */
-    show(data) {
+    show(data,update) {
+        this.isUpdate = update;
       this.meValue = true;
       if(!data){
         //添加状态
@@ -91,13 +93,17 @@ export default {
       this.subLoading = true;
       let guid = uuidv1();
       this.form.UnionGuidTemp = guid;
+        let url = this.isUpdate ? "/CarSer/Update" : "/CarSer/Add";
+        if(this.isUpdate){
+            this.form.DocJson.UnionGuidTemp = uuidv1()
+        }
       if(this.addState){
         //添加状态
         this.form.UnionGuid = guid;
       }
       this.$request({
-        url:'/DoAction/Submit',
-        data:this.form
+        url:url,
+        data:this.form.DocJson
       })
         .then((res)=>{
           this.$emit('on-upload',res)

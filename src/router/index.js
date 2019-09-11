@@ -33,13 +33,13 @@ const router = new Router({
 })
 
 router.beforeEach((to, from, next) => {
-	//如果是登录页面则直接进入
+    //如果是登录页面则直接进入
 	if (to.name == "登录页面") {
 		next();
 		return
 	}
 	//检查当前是否存在有用户信息
-	if (!store.state.user.rsid) {
+	if (store.state.user.isLogin === false) {
 		//表示当前不存在用户信息，及没有登录，需要跳转到登录页面
 		next('/Loading/index')
 		return

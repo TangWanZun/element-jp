@@ -20,6 +20,14 @@
           <i class="el-icon-menu"></i>
           <span slot="title">车系精品管理</span>
         </el-menu-item>
+          <el-menu-item index="/wxMinManage/carousel">
+              <i class="el-icon-picture"></i>
+              <span slot="title">轮播图管理</span>
+          </el-menu-item>
+          <el-menu-item index="/wxMinManage/user">
+              <i class="el-icon-user"></i>
+              <span slot="title">用户管理</span>
+          </el-menu-item>
       </el-menu>
     </div>
     <div class="main">

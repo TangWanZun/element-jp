@@ -78,7 +78,7 @@ export default {
       }
       this.subLoading = true;
       this.$request({
-        url: "/Login/ModifyPsw",
+        url: "/pc/Login/ModifyPsw",
         data: {
           oldPsw: this.form.oldPsw,
           newPsw: this.form.newPsw2
@@ -91,6 +91,7 @@ export default {
         });
         //这里执行退出登录操作
         this.$store.dispatch('user/userLoginOut');
+        this.$router.push("/Loading/index");
       })
       .finally(()=>{
         this.subLoading = false;

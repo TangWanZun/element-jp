@@ -9,7 +9,7 @@
           style="width:200px;margin-right:10px"
           @keyup.native.enter="getData"
         ></el-input>
-        <el-button type="primary" size="small" icon="el-icon-search" @click="getData" circle></el-button>
+        <el-button type="primary" size="small" icon="el-icon-search" @click="getData(1)" circle></el-button>
         <el-button
           style="padding:10px 15px"
           type="primary"
@@ -130,7 +130,7 @@ export default {
      * 车系修改
      */
     cartypeModalSetting(key) {
-      this.$refs.cartypeModalRef.show(Object.assign({}, this.formData[key]));
+      this.$refs.cartypeModalRef.show(Object.assign({}, this.formData[key]),true);
     },
     /**
      * 删除车系
@@ -143,6 +143,7 @@ export default {
       })
         .then(() => {
           delData({
+              url:"/CarSer/Delete",
             docType: "CarSer",
             list: [this.formData[key]]
           }).finally(res => {
@@ -176,7 +177,6 @@ export default {
   width: 100%;
   align-items: flex-start;
   align-content: flex-start;
-  width: 100%;
 }
 .item {
   width: 300px;

@@ -1,7 +1,7 @@
 <template>
   <el-card :body-style="{'padding':0,'height':'100%'}">
     <div class="card-body">
-      <div class="card-header">
+      <div :class="noborder ? 'card-header no' : 'card-header'">
         <slot name="header"></slot>
       </div>
       <div class="card-main">
@@ -16,7 +16,8 @@
 
 <script>
 export default {
-  name: "cardTable"
+  name: "cardTable",
+    props:["noborder"]
 };
 </script>
 
@@ -32,6 +33,9 @@ export default {
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
     flex-shrink: 0;
   }
+    .no{
+        border:none;
+    }
   // 内容
   .card-main {
     padding: 10px;
