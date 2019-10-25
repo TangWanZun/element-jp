@@ -34,7 +34,6 @@
           <el-tab-pane label="地理位置" name="tabs-2">
             <el-form label-position="left" ref="form" :model="form" label-width="80px" size="mini">
               <el-form-item label="检索地址">
-                <!-- <el-input v-model="form.address" @change="addressChange"></el-input> -->
                 <el-select
                   v-model="form.AddressName"
                   placeholder="请填写经销商位置"
